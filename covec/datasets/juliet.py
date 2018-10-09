@@ -59,6 +59,8 @@ class Juliet(Dataset):
             z.extractall(PATH)
 
     def parse(self):
+        """Parse something
+        """
         pass
 
     def process(self, method):
