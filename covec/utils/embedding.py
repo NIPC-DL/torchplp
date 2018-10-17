@@ -14,14 +14,22 @@ class Wordsmodel:
        <https://en.wikipedia.org/wiki/Word2vec>
     
     Args:
+        sentences <list>: The list of sentence
+        parameter <dict>: The gensim.models.Word2Vec parameter
         
     """
 
-    def __init__(self, sentence, parameter=None):
-        pass
+    def __init__(self, sentences, parameter=dict()):
+        corpus = self._wordsplit(sentences)
+        self._model = Word2Vec(sentences=corpus, **parameter)
 
     def training(self, sentences):
         corpus = self._wordsplit(sentences)
+        self._model.build_vocab(corpus, update=True)
+        self._model.train(corpus)
+
+    def save(self, name):
+        self._model.save(name)
 
     def _wordsplit(self, sentences):
         corpus = [x.split(' ') for x in sentences]
