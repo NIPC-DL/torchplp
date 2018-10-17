@@ -1,22 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-ast - defination of ast
+ast.py - Abstract Syntax Tree Node Defined
+
+Author: Verf
+Email: verf@protonmail.com
+License: MIT
 """
-from collections import Iterable
-
-
-class NodeType:
-    def __init__(self):
-        pass
 
 
 class ASTNode:
+    """Abstract Syntax Tree Node
+
+    Args:
+        None
+    """
+
     def __init__(self):
         self._parent = None
-        self._children = list()
+        self._children = []
         self._id = None
         self._data = None
-        self._type = None
+        self._kind = None
         self._raw = None
 
     @property
@@ -24,7 +28,7 @@ class ASTNode:
         """Return Node parent"""
         return self._parent
 
-    @property.setter
+    @parent.setter
     def parent(self, node):
         """Set parent of Node"""
         if isinstance(node, ASTNode):
@@ -37,10 +41,10 @@ class ASTNode:
         """Return children of Node"""
         return self._children
 
-    @property.setter
+    @children.setter
     def children(self, nodes):
         """Set children of Node"""
-        if isinstance(nodes, Iterable):
+        if hasattr(nodes, "__iter__"):
             for n in nodes:
                 if isinstance(n, ASTNode):
                     self._children.append(n)
@@ -54,7 +58,7 @@ class ASTNode:
         """Return Node id"""
         return self._id
 
-    @property.setter
+    @id.setter
     def id(self, value):
         """Set id of Node"""
         self._id = str(value)
@@ -64,19 +68,19 @@ class ASTNode:
         """Return Node data"""
         return self._data
 
-    @property.setter
+    @data.setter
     def data(self, value):
         """Set data of Node"""
         self._data = str(value)
 
     @property
-    def type(self):
+    def kind(self):
         """Return type of Node"""
-        return self._type
+        return self._kind
 
-    @property.setter
-    def type(self, value):
-        pass
+    @kind.setter
+    def kind(self, value):
+        self._kind = value
 
     @property
     def raw(self):
@@ -87,7 +91,10 @@ class ASTNode:
         """
         return self._raw
 
-    @property.setter
+    @raw.setter
     def raw(self, value):
         """set raw data of node"""
         self._raw = value
+
+    def __repr__(self):
+        return f'<covec.utils.ast.ASTNode>\n{self.id}\n{self.data}\n{self.kind}'

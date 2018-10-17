@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""
+utils.py - The utils functions for covec.utils
+
+Author: Verf
+Email: verf@protonmail.com
+License: MIT
+"""
+
 import re
 import clang.cindex as cc
 
@@ -12,8 +20,8 @@ def walker(root, selector=lambda x: True):
     :param selector: select which node you want
     :return selected: list of selected node
     """
-    selected = list()
-    queue = list()
+    selected = []
+    queue = []
     queue.append(root)
     while queue:
         node = queue.pop(0)
@@ -59,7 +67,7 @@ def file_slice(path, lines):
 def remove_comment(text):
     """remove c/c++ style comments
     """
-    return re.sub('//.*?\n|/\*.*?\*/', '', text, flags=re.S)
+    return re.sub(r'//.*?\n|/\*.*?\*/', '', text, flags=re.S)
 
 
 def deduplication(slice_set):

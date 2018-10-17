@@ -1,13 +1,85 @@
 # -*- coding: utf-8 -*-
+"""
+loader.py - The file loader for specific programs
+
+Author: Verf
+Email: verf@protonmail.com
+License: MIT
+"""
 import clang.cindex as cc
+from .ast import ASTNode
+
+
+def packer_cc(root):
+    """Transform clang ast to covec ast
+
+    Args:
+        root <clang.cindex.Cursor>: root of clang ast
+    
+    Return:
+        ast <covec.utils.ast.ASTNode>: covec ast
+    """
+    ast = ASTNode()
+    ast.id = root.hash
+    if root.spelling:
+        ast.data = root.spelling
+    else:
+        ast.data = root.displayname
+    ast.kind = root.kind
+    ast.raw = root
+    for c in root.get_children():
+        tmp_c = packer_cc(c)
+        tmp_c.parent = ast
+        ast.children.append(tmp_c)
+    return ast
 
 
 def loader_cc(path):
-    """load c/c++ file from path, return entry node
+    """Load c/c++ file from path, return entry node
 
-    :param path: path of parsed file :string
-    :return entry: return entry(file) node :cc.TranslationUnit
+    This function load c/c++ source code file from path, the file can be
+    incomplete but can't have too many errors.
+
+    Args:
+        path <str>: path of the file
+    
+    Return:
+        ast <covec.utils.ast.ASTNode>: Abstract Syntax Tree
     """
     cindex = cc.Index.create()
     entry = cindex.parse(path)
-    return entry
+    ast = packer_cc(entry.cursor)
+    return ast
+
+
+def loader_cgd(path):
+    """Load code gadget file from path
+
+    cgd file is a file looks like:
+        <title line>
+        <code block>
+        <label line>
+        <'-'*n>
+        <title line>
+        ...
+
+    Args:
+        path <str>: path of the file
+    
+    Return:
+        set of cgd_list:
+        (
+            (cgd, label),
+            ...
+        )
+    """
+    cgd_list = []
+    with open(path, 'r', encoding='utf-8') as f:
+        frag = []
+        for line in f:
+            if '-'*5 not in line:
+                frag.append(line[:-1])
+            else:
+                cgd_list.append(frag)
+                frag = []
+    return ((x[1:-1], x[-1]) for x in cgd_list)

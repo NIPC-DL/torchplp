@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+"""
+parser.py - The source code parser for covec.utils
+
+Author: Verf
+Email: verf@protonmail.com
+License: MIT
+"""
 from . import utils
 from . import loader
 from .constants import NODE_FILTER
-"""
-parser - parse program file and extract abstract syntax tree
-"""
-
 
 class Parser:
     """Super class of Parser
