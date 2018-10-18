@@ -6,6 +6,7 @@ Author: Verf
 Email: verf@protonmail.com
 License: MIT
 """
+from .processor_cgd import Processor_cgd
 
 
 def sysevr(files, type_):
@@ -30,4 +31,5 @@ def sysevr(files, type_):
         pass
     elif type_ == 'cgd':
         for file in files:
-            pass
+            processor = Processor_cgd(file)
+            

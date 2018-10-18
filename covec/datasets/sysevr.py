@@ -40,20 +40,29 @@ class Sysevr(Dataset):
         if not os.path.exists(self._datapath):
             os.makedirs(self._datapath)
         if download:
-            self.download(proxy)
+            self.download()
 
     def download(self):
         """Download SySeVR Datasets from their Github Repo
 
         Directory Tree:
            <datapath>/SySeVR
-                └── Raw
-                    └── SySeVR
+                    └── Raw
+                        ├── API function call.txt
+                        ├── Arithmetic expression.txt
+                        ├── Array usage.txt
+                        ├── Pointer usage.txt
+                        └── SySeVR.git
+                            ├── API function call.zip
+                            ├── Arithmetic expression.zip
+                            ├── Array usage.zip
+                            ├── library-API function calls.docx
+                            ├── List of the 126 CWE IDs.docx
+                            ├── Pointer usage.zip
+                            └── README.md
 
         Args:
-            proxy <str>: The proxy used for download.
-                eg. 'http://user:pass@host:port/'
-                    'socks5://user:pass@host:port'
+            None
 
         """
         url = DOWNLOAD_URL['sysevr']
@@ -104,12 +113,12 @@ class Sysevr(Dataset):
             sysevr(file_list, 'cgd')
     
     def _selected(self, category):
-        """Selected file by categoryVulDeePecker and 
-        VulDeePecker and 
-        Args:VulDeePecker and 
-            category <None, list>: TheVulDeePecker and  parts of Juliet Test Suite used on dataset
-            - None, default: use all cVulDeePecker and ategoary
-            - 'AE': Arithmetic ExpressVulDeePecker and ion
+        """Selected file by category
+        
+        Args:
+            category <None, list>: The parts of Juliet Test Suite used on dataset
+            - None, default: use all categoary
+            - 'AE': Arithmetic Expression
             - 'AF': API Function Call
             - 'AU': Array Usage
             - 'PU': Pointer Usage

@@ -8,6 +8,7 @@ License: MIT
 """
 import clang.cindex as cc
 from .ast import ASTNode
+from tempfile import NamedTemporaryFile
 
 
 def packer_cc(root):
@@ -34,7 +35,7 @@ def packer_cc(root):
     return ast
 
 
-def loader_cc(path):
+def loader_cc(data):
     """Load c/c++ file from path, return entry node
 
     This function load c/c++ source code file from path, the file can be
@@ -46,10 +47,17 @@ def loader_cc(path):
     Return:
         ast <covec.utils.ast.ASTNode>: Abstract Syntax Tree
     """
-    cindex = cc.Index.create()
-    entry = cindex.parse(path)
-    ast = packer_cc(entry.cursor)
-    return ast
+    if isinstance(data, list):
+        with NamedTemporaryFile('w+t') as f:
+            f.write('\n'.join(data))
+            f.seek(0)
+            index = cc.Index.create()
+            tu = index.parse(f.name)
+    else:
+        index = cc.Index.create()
+        tu = index.parse(data)
+    root = packer_cc(tu.cursor)
+    return root
 
 
 def loader_cgd(path):
@@ -77,7 +85,7 @@ def loader_cgd(path):
     with open(path, 'r', encoding='utf-8') as f:
         frag = []
         for line in f:
-            if '-'*5 not in line:
+            if '-' * 5 not in line:
                 frag.append(line[:-1])
             else:
                 cgd_list.append(frag)
