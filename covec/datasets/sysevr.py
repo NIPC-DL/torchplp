@@ -12,7 +12,7 @@ import zipfile
 from .utils import download_file, git_clone_file
 from .constants import DOWNLOAD_URL, JULIET_CATEGORY, SYSEVR_CATEGORY
 from .models import Dataset
-from covec.utils.processor import sysevr
+from covec.processor import sysevr
 
 
 class Sysevr(Dataset):
@@ -86,7 +86,7 @@ class Sysevr(Dataset):
                         os.path.join(root, file), os.path.join(raw_path, file))
                     os.rmdir(root)
     
-    def process(self, methods=None, category=None):
+    def process(self, methods=None, category=None, cache=True):
         """Process dataset and create dataset
 
         Directory Tree:
@@ -103,6 +103,7 @@ class Sysevr(Dataset):
                 - 'AF': API Function Call
                 - 'AU': Array Usage
                 - 'PU': Pointer Usage
+            cache <bool>: W
 
         """
         file_list = self._selected(category)

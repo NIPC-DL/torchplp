@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-__init__.py - The processor methods collections
+This subpackage is the collection of all process for datasets
 
 Author: Verf
 Email: verf@protonmail.com
 License: MIT
 """
-from .api import sysevr
+from .sysevr import sysevr
 
 __all__ = [
     'sysevr',

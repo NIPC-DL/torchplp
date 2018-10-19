@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-loader.py - The file loader for specific programs
+loader.py - Load data for further processing
 
 Author: Verf
 Email: verf@protonmail.com
 License: MIT
 """
 import clang.cindex as cc
-from .ast import ASTNode
+from .astree import ASTNode
 from tempfile import NamedTemporaryFile
 
 

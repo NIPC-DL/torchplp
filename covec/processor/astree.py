@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ast.py - Abstract Syntax Tree Node Defined
+astree.py - Abstract Syntax Tree Structure
 
 Author: Verf
 Email: verf@protonmail.com
@@ -9,7 +9,7 @@ License: MIT
 
 
 class ASTNode:
-    """Abstract Syntax Tree Node
+    """Abstract Syntax Tree Node Class
 
     Args:
         None
@@ -22,6 +22,9 @@ class ASTNode:
         self._data = None
         self._kind = None
         self._raw = None
+
+    def __repr__(self):
+        return f'<covec.utils.ast.ASTNode>\n{self.id}\n{self.data}\n{self.kind}'
 
     @property
     def parent(self):
@@ -87,7 +90,7 @@ class ASTNode:
         """
         Return raw class of Node,
         raw class is a raw data created by each language parser,
-        for c/cpp, raw means clang.cindex.Cursor.
+        for c/c++, raw means clang.cindex.Cursor.
         """
         return self._raw
 
@@ -96,5 +99,29 @@ class ASTNode:
         """set raw data of node"""
         self._raw = value
 
-    def __repr__(self):
-        return f'<covec.utils.ast.ASTNode>\n{self.id}\n{self.data}\n{self.kind}'
+
+class ASTree:
+    """Abstract Syntax Tree Class
+    
+    Args:
+        None
+    """
+
+    def __init__(self):
+        self._root = None
+
+    @property
+    def root(self):
+        """Return root node of AST"""
+        return self._root
+
+    @root.setter
+    def root(self, node):
+        if isinstance(node, ASTNode):
+            self._root = node
+        else:
+            raise ValueError(f'{node} is node a ASTNode')
+
+    @staticmethod
+    def _walker(root):
+        pass

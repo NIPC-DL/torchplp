@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-processor_cgd.py - The processor method for code gadget datasets
+sysevr.py - The sysevr processing methods for datasets
 
 Author: Verf
 Email: verf@protonmail.com
@@ -9,8 +9,7 @@ License: MIT
 import re
 from . import utils
 from .constants import KEYWORD, DEFINED
-from covec.utils.loader import loader_cgd
-from .model import Processor
+from .loader import loader_cgd
 
 
 def _get_var_from_defined(tokens):
@@ -72,27 +71,32 @@ def _var_replace(codes, var_list, func_list):
     return syms
 
 
-class Processor_cgd(Processor):
-    """The processor for code gadget file
-    
+def symbolize_r(cgd_list):
+    sym_set = []
+    for codes, label in cgd_list:
+        var_list, func_list = _get_var_func(codes)
+        syms = _var_replace(codes, var_list, func_list)
+        sym_set.append([syms, label])
+    return sym_set
+
+
+def symbolize_l(cgd_list):
+    pass
+
+
+def process_cgd(path):
+    """Processs the cgd file
+
     Args:
+        path <str>: the path of input file
+    
+    Return:
         None
     """
 
-    def __init__(self):
-        pass
+    cgd_list = loader_cgd(path)
+    symr_list = symbolize_r(cgd_list)
 
-    def process(self, path):
-        cgd_list = loader_cgd(path)
-        symr_list = self.symbolize_r(cgd_list)
-
-    def symbolize_r(self, cgd_list):
-        sym_set = []
-        for codes, label in cgd_list:
-            var_list, func_list = _get_var_func(codes)
-            syms = _var_replace(codes, var_list, func_list)
-            sym_set.append([syms, label])
-        return sym_set
-
-    def symbolize_l(self, cgd_list):
+def sysevr(file_list, type_):
+    if type_ == 'sc':
         pass

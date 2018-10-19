@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-constants.py - The constant variable defined for datasets
+constants.py - The constants used for datasets
 
 Author: Verf
 Email: verf@protonmail.com
