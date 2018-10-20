@@ -85,8 +85,9 @@ class Sysevr(Dataset):
                     os.rename(
                         os.path.join(root, file), os.path.join(raw_path, file))
                     os.rmdir(root)
-    
-    def process(self, methods=None, category=None, cache=True):
+
+    def process(self, methods=None, category=None, sample_size=None,
+                **setting):
         """Process dataset and create dataset
 
         Directory Tree:
@@ -97,22 +98,26 @@ class Sysevr(Dataset):
             method <None, list>: The process methods used on dataset
                 - None, default: use all methods
                 - 'sysevr': source from arXiv:1807.06756
-            category <None, list>: The parts of Juliet Test Suite used on dataset
+            category <None, list>: The parts of Juliet Test Suite used on 
+                                   dataset
                 - None, default: use all categoary
                 - 'AE': Arithmetic Expression
                 - 'AF': API Function Call
                 - 'AU': Array Usage
                 - 'PU': Pointer Usage
-            cache <bool>: W
+            sample_size <int, None, optional>: How many samples are used for 
+                                               processing.
+            **config <dict, optional>: The optional setting for selected methods
 
         """
         file_list = self._selected(category)
-        print(file_list)
         if not methods:
-            methods = ['sysevr', ]
+            methods = [
+                'sysevr',
+            ]
         if 'sysevr' in methods:
-            sysevr(file_list, 'cgd')
-    
+            sysevr(file_list, 'cgd', sample_size, **setting)
+
     def _selected(self, category):
         """Selected file by category
         

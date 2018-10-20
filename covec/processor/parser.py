@@ -6,40 +6,40 @@ Author: Verf
 Email: verf@protonmail.com
 License: MIT
 """
-import clang.cindex as cc
-from .loader import loader_cc
+from collections import deque
+from .astree import ASTNode
 
 
 class Parser:
-    """Upper class"""
-
-
-class Parser_cc(Parser):
-    """The Parser for c/c++ data
+    """The AST Parser
     
     Args:
-        data <list, str>: list of data or data file path
-
+        root <covec.processor.ASTNode>: The root node of AST
     """
 
-    def __init__(self, data):
-        self._root = loader_cc(data)
+    def __init__(self, root):
+        if isinstance(root, ASTNode):
+            self._root = root
+        else:
+            raise ValueError(f'{root} is not a ASTNode')
 
+    def walker(self, selector=lambda x: True):
+        """
+        BFS every child of root and return selected node,
+        if selector not given, return list of all node.
 
-def parse(data, type_):
-    """Return adopt Parser by given type
-    
-    Args:
-        data <list, str>: list of data or data file path
-        type_ <str>: the program language of input data
-            - 'cc': c/c++ code data
-    
-    Return:
-        pr <covec.processor.parser.Parser>: The Parser Object
-
-    """
-    if type_ == 'cc':
-        pr = Parser_cc(data)
-    else:
-        raise ValueError(f'Worry Parser Type: {type_}')
-    return pr
+        Args:
+            root <covec.processor.ASTNode>: The root node of AST selector <function, optional>: select which node you want
+        Return:
+            selected <list>: list of selected node
+        """
+        selected = []
+        queue = deque()
+        queue.append(self._root)
+        while queue:
+            node = queue.popleft()
+            for child in node.children:
+                queue.append(child)
+            if selector(node):
+                selected.append(node)
+        return selected

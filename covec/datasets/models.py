@@ -8,7 +8,5 @@ License: MIT
 """
 
 
-
 class Dataset:
-    def __init__(self):
-        pass
+    """Upper dataset class"""

@@ -7,7 +7,7 @@ Email: verf@protonmail.com
 License: MIT
 """
 import clang.cindex as cc
-from .astree import ASTNode
+from .astree import ASTNode, ASTKind
 from tempfile import NamedTemporaryFile
 
 
@@ -26,12 +26,12 @@ def packer_cc(root):
         ast.data = root.spelling
     else:
         ast.data = root.displayname
-    ast.kind = root.kind
+    ast.kind = ASTKind(root.kind, 'cc')
     ast.raw = root
     for c in root.get_children():
-        tmp_c = packer_cc(c)
-        tmp_c.parent = ast
-        ast.children.append(tmp_c)
+        child = packer_cc(c)
+        child.parent = ast
+        ast.children.append(child)
     return ast
 
 
@@ -56,19 +56,19 @@ def loader_cc(data):
     else:
         index = cc.Index.create()
         tu = index.parse(data)
-    root = packer_cc(tu.cursor)
-    return root
+    return packer_cc(tu.cursor)
 
 
 def loader_cgd(path):
     """Load code gadget file from path
 
     cgd file is a file looks like:
-        <title line>
-        <code block>
-        <label line>
-        <'-'*n>
-        <title line>
+        < title >
+        < function name >
+        < code block >
+        < label >
+        < '-'*n, n>5 >
+        < title >
         ...
 
     Args:
@@ -90,4 +90,4 @@ def loader_cgd(path):
             else:
                 cgd_list.append(frag)
                 frag = []
-    return ((x[1:-1], x[-1]) for x in cgd_list)
+    return ((x[2:-1], x[-1]) for x in cgd_list)

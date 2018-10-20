@@ -9,7 +9,8 @@ License: MIT
 import re
 from . import utils
 from .constants import KEYWORD, DEFINED
-from .loader import loader_cgd
+from .loader import loader_cgd, loader_cc
+from .parser import Parser
 
 
 def _get_var_from_defined(tokens):
@@ -81,22 +82,26 @@ def symbolize_r(cgd_list):
 
 
 def symbolize_l(cgd_list):
-    pass
+    symr_list = []
+    for code, label in cgd_list:
+        ast = loader_cc(code)
+        pr = Parser(ast)
+        var_decl = pr.walker(lambda x: x.kind == 'VAR_DECL')
+        var_names = [x.data for x in var_decl]
+        fun_decl = pr.walker(lambda x: x.kind == 'FUNCTION_DECL')
+        fun_names = [x.data for x in fun_decl]
 
 
-def process_cgd(path):
-    """Processs the cgd file
-
-    Args:
-        path <str>: the path of input file
-    
-    Return:
-        None
-    """
-
-    cgd_list = loader_cgd(path)
-    symr_list = symbolize_r(cgd_list)
-
-def sysevr(file_list, type_):
+def sysevr(file_list, type_, sample_size, tuncat=50):
     if type_ == 'sc':
         pass
+    elif type_ == 'cgd':
+        cgd_list = []
+        for file in file_list:
+            cgd_list.extend(loader_cgd(file))
+            if sample_size and len(cgd_list) > sample_size:
+                cgd_list = cgd_list[:sample_size]
+                break
+        symr_list = symbolize_l(cgd_list)
+    else:
+        raise ValueError(f"type_ must in ['sc', 'cgd', ]")

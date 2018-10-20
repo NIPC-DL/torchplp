@@ -12,7 +12,7 @@ import zipfile
 from .utils import download_file
 from .constants import DOWNLOAD_URL, JULIET_CATEGORY
 from .models import Dataset
-from covec.utils.processor import sysevr
+from covec.processor import sysevr
 
 
 class Juliet(Dataset):
@@ -61,10 +61,12 @@ class Juliet(Dataset):
         download_file(url, raw_path, proxy)
         print('Download success, Start extracting.')
         # Extract download zip file
-        with zipfile.ZipFile(os.path.join(raw_path, os.listdir(raw_path)[0])) as z:
+        with zipfile.ZipFile(os.path.join(raw_path,
+                                          os.listdir(raw_path)[0])) as z:
             z.extractall(raw_path)
 
-    def process(self, methods=None, category=None):
+    def process(self, methods=None, category=None, sample_size=None,
+                **setting):
         """Process dataset and create dataset
 
         Directory Tree:
@@ -81,13 +83,18 @@ class Juliet(Dataset):
                 - 'AF': API Function Call
                 - 'AU': Array Usage
                 - 'PU': Pointer Usage
+            sample_size <int, None, optional>: How many samples are used for 
+                                               processing.
+            **config <dict, optional>: The optional setting for selected methods
 
         """
-        files = self._selected(category)
+        file_list = self._selected(category)
         if not methods:
-            methods = ['sysevr', ]
+            methods = [
+                'sysevr',
+            ]
         if 'sysevr' in methods:
-            sysevr(files, 'sc')
+            sysevr(file_list, 'sc', sample_size, **setting)
 
     def _selected(self, category):
         """Selected file by category
