@@ -110,13 +110,16 @@ class Sysevr(Dataset):
             **config <dict, optional>: The optional setting for selected methods
 
         """
+        cooked_path = self._datapath + 'Cooked/'
+        if not os.path.exists(cooked_path):
+            os.makedirs(cooked_path)
         file_list = self._selected(category)
         if not methods:
             methods = [
                 'sysevr',
             ]
         if 'sysevr' in methods:
-            sysevr(file_list, 'cgd', sample_size, **setting)
+            sysevr(cooked_path, file_list, 'cgd', sample_size, **setting)
 
     def _selected(self, category):
         """Selected file by category

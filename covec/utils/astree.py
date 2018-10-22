@@ -102,11 +102,11 @@ class ASTNode:
     @property
     def kind(self):
         """Return type of Node"""
-        return self._kind
+        return self._kind.name
 
     @kind.setter
-    def kind(self, value, type_):
-        self._kind = ASTKind(value, type_)
+    def kind(self, value):
+        self._kind = value
 
     @property
     def raw(self):

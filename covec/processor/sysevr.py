@@ -7,69 +7,11 @@ Email: verf@protonmail.com
 License: MIT
 """
 import re
-from . import utils
+from pprint import pprint
 from .constants import KEYWORD, DEFINED
-from .loader import loader_cgd, loader_cc
 from .parser import Parser
-
-
-def _get_var_from_defined(tokens):
-    defin = list(set([x for x in tokens if x in DEFINED]))
-    var_list = []
-    if defin:
-        index = tokens.index(defin[0])
-        try:
-            var_list.append(utils.remove_symbol(tokens[index + 1]))
-        except IndexError:
-            pass
-    return [x for x in var_list if x not in KEYWORD + [None, '', ' ']]
-
-
-def _get_var_from_regexp(tokens):
-    var_list = []
-    for tok in tokens:
-        rep = re.search(r'^\w{1,10}_\w{1,10}[^(]$', tok)
-        if rep:
-            var_list.append(utils.remove_symbol(rep.group(0)))
-    return list(
-        filter(
-            lambda x: x not in KEYWORD + DEFINED + [None, '', ' '] and x.find('(') == -1,
-            var_list))
-
-
-def _get_func_from_regxp(tokens):
-    func_list = []
-    for tok in tokens:
-        rep = re.search(r"^CWE[\w:~]*\(?\)?$", tok)
-        if rep:
-            func_list.append(utils.remove_symbol(rep.group(0)))
-    return func_list
-
-
-def _get_var_func(codes):
-    var_list = []
-    func_list = []
-    for line in codes:
-        tokens = utils.line_split(line)
-        var_list += _get_var_from_defined(tokens) + _get_var_from_regexp(
-            tokens)
-        func_list += _get_func_from_regxp(tokens)
-    return var_list, func_list
-
-
-def _var_replace(codes, var_list, func_list):
-    syms = []
-    var_list.sort()
-    for line in codes:
-        tokens = utils.line_split_plus(line)
-        for k, v in enumerate(tokens):
-            if v in var_list:
-                tokens[k] = "VAR" + str(var_list.index(v))
-            if v in func_list:
-                tokens[k] = "FUNC" + str(func_list.index(v))
-        syms.append(' '.join(tokens))
-    assert len(syms) > 0
-    return syms
+from .embedding import Wordsmodel
+from covec.utils.loader import loader_cgd, loader_cc
 
 
 def code_split(line):
@@ -85,18 +27,21 @@ def code_split(line):
         filter(lambda x: x not in [None, ' ', ''], re.split(r'(\W|\s)', line)))
 
 
-def symbolize_r(cgd_list):
-    sym_set = []
-    for codes, label in cgd_list:
-        var_list, func_list = _get_var_func(codes)
-        syms = _var_replace(codes, var_list, func_list)
-        sym_set.append([syms, label])
-    return sym_set
+def symbolize(cgd_list):
+    """transform code gadget to symbolic representation
+    
+    Args:
+        cgd_list <list>: The list of code gadget, each code gadget is a list 
+                         like [<codes>, <label>]
+    
+    Return:
+        symr_list <list>: The symbolic representation list of code gadget, each
+                          of it looks like [<codes in split>, <label>]
+    """
 
-
-def symbolize_l(cgd_list):
     symr_list = []
     for code, label in cgd_list:
+        symr = []
         ast = loader_cc(code)
         pr = Parser(ast)
         # get variable and function declaration
@@ -106,12 +51,20 @@ def symbolize_l(cgd_list):
         fun_names = [x.data for x in fun_decl]
         for line in code:
             tokens = code_split(line)
-            for tok in tokens:
-                if tok in var_names:
-                    pass
+            for ind, val in enumerate(tokens):
+                if val in var_names:
+                    tokens[ind] = 'var' + str(var_names.index(val))
+                if val in fun_names:
+                    tokens[ind] = 'fun' + str(fun_names.index(val))
+                # some long data that can't found by libclang
+                if re.match(r'^CWE\d{2,3}_.*Data$', val):
+                    tokens[ind] = 'varx'
+            symr.append(tokens)
+        symr_list.append([symr, label])
+    return symr_list
 
 
-def sysevr(file_list, type_, sample_size, tuncat=50):
+def sysevr(root, file_list, type_, sample_size, tuncat=50):
     if type_ == 'sc':
         pass
     elif type_ == 'cgd':
@@ -123,6 +76,8 @@ def sysevr(file_list, type_, sample_size, tuncat=50):
                 cgd_list = cgd_list[:sample_size]
                 break
         # get the symbolic representation
-        symr_list = symbolize_l(cgd_list)
+        symr_list = symbolize(cgd_list)
+        # train word model
+
     else:
         raise ValueError(f"type_ must in ['sc', 'cgd', ]")

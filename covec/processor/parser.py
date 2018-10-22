@@ -7,7 +7,7 @@ Email: verf@protonmail.com
 License: MIT
 """
 from collections import deque
-from .astree import ASTNode
+from covec.utils.astree import ASTNode
 
 
 class Parser:

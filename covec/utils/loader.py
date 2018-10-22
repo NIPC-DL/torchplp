@@ -48,7 +48,7 @@ def loader_cc(data):
         ast <covec.utils.ast.ASTNode>: Abstract Syntax Tree
     """
     if isinstance(data, list):
-        with NamedTemporaryFile('w+t') as f:
+        with NamedTemporaryFile('w+t', suffix='.cpp') as f:
             f.write('\n'.join(data))
             f.seek(0)
             index = cc.Index.create()

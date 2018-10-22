@@ -28,7 +28,12 @@ setup(
         'requests',
         'tqdm',
         'gensim',
+        'pyyaml',
     ],
-    setup_requires=["pytest-runner", ],
-    tests_require=["pytest", ],
+    setup_requires=[
+        "pytest-runner",
+    ],
+    tests_require=[
+        "pytest",
+    ],
 )

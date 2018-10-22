@@ -19,18 +19,12 @@ class Wordsmodel:
         
     """
 
-    def __init__(self, sentences, parameter=dict()):
-        corpus = self._wordsplit(sentences)
+    def __init__(self, corpus, parameter=dict()):
         self._model = Word2Vec(sentences=corpus, **parameter)
 
-    def training(self, sentences):
-        corpus = self._wordsplit(sentences)
+    def training(self, corpus):
         self._model.build_vocab(corpus, update=True)
         self._model.train(corpus)
 
     def save(self, name):
         self._model.save(name)
-
-    def _wordsplit(self, sentences):
-        corpus = [x.split(' ') for x in sentences]
-        return corpus

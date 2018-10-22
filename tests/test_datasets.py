@@ -15,17 +15,25 @@ test_path = os.path.expanduser('~/WorkSpace/Test/covec_test/')
 
 def test_juliet():
     if not os.path.exists(test_path + 'Juliet_Test_Suite/Raw/'):
-        data = Juliet(test_path, download=True, proxy='socks5://127.0.0.1:1080')
+        data = Juliet(
+            test_path, download=True, proxy='socks5://127.0.0.1:1080')
     else:
         data = Juliet(test_path, download=False)
-    data.process(category=['AF', ])
+    data.process(category=[
+        'AF',
+    ])
+
 
 def test_sysevr():
     if not os.path.exists(test_path + 'SySeVR/Raw/'):
         data = Sysevr(test_path, download=True)
     else:
         data = Sysevr(test_path, download=False)
-    data.process(category=['AF', ])
+    data.process(
+        category=[
+            'AF',
+        ], sample_size=20)
+
 
 if __name__ == '__main__':
     test_sysevr()
