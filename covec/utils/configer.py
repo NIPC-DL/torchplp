@@ -6,3 +6,12 @@ Author: Verf
 Email: verf@protonmail.com
 License: MIT
 """
+import pyyaml
+
+
+class Config:
+    def __init__(self):
+        pass
+
+    def load(self):
+        pass
