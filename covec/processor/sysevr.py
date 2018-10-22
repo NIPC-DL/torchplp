@@ -72,6 +72,19 @@ def _var_replace(codes, var_list, func_list):
     return syms
 
 
+def code_split(line):
+    """split code line into atom
+    
+    Args:
+        line: The code line
+    
+    Return:
+        tokens <list>: The list of atom token for code line
+    """
+    return list(
+        filter(lambda x: x not in [None, ' ', ''], re.split(r'(\W|\s)', line)))
+
+
 def symbolize_r(cgd_list):
     sym_set = []
     for codes, label in cgd_list:
@@ -86,22 +99,30 @@ def symbolize_l(cgd_list):
     for code, label in cgd_list:
         ast = loader_cc(code)
         pr = Parser(ast)
+        # get variable and function declaration
         var_decl = pr.walker(lambda x: x.kind == 'VAR_DECL')
         var_names = [x.data for x in var_decl]
         fun_decl = pr.walker(lambda x: x.kind == 'FUNCTION_DECL')
         fun_names = [x.data for x in fun_decl]
+        for line in code:
+            tokens = code_split(line)
+            for tok in tokens:
+                if tok in var_names:
+                    pass
 
 
 def sysevr(file_list, type_, sample_size, tuncat=50):
     if type_ == 'sc':
         pass
     elif type_ == 'cgd':
+        # load the sample_size number of code gadget
         cgd_list = []
         for file in file_list:
             cgd_list.extend(loader_cgd(file))
             if sample_size and len(cgd_list) > sample_size:
                 cgd_list = cgd_list[:sample_size]
                 break
+        # get the symbolic representation
         symr_list = symbolize_l(cgd_list)
     else:
         raise ValueError(f"type_ must in ['sc', 'cgd', ]")
