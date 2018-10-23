@@ -22,9 +22,13 @@ class Wordsmodel:
     def __init__(self, corpus, parameter=dict()):
         self._model = Word2Vec(sentences=corpus, **parameter)
 
-    def training(self, corpus):
+    def update(self, corpus):
         self._model.build_vocab(corpus, update=True)
         self._model.train(corpus)
 
     def save(self, name):
         self._model.save(name)
+
+    @property
+    def model(self):
+        return self._model

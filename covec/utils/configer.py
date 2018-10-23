@@ -6,12 +6,19 @@ Author: Verf
 Email: verf@protonmail.com
 License: MIT
 """
-import pyyaml
+import yaml
 
 
 class Config:
     def __init__(self):
-        pass
+        self._data = None
 
-    def load(self):
-        pass
+    def load(self, path):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                self._data = yaml.load(f)
+        except FileNotFoundError:
+            print(f'{path} not found')
+
+
+config = Config()

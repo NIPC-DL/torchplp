@@ -86,8 +86,7 @@ class Sysevr(Dataset):
                         os.path.join(root, file), os.path.join(raw_path, file))
                     os.rmdir(root)
 
-    def process(self, methods=None, category=None, sample_size=None,
-                **setting):
+    def process(self, methods=None, category=None, range_=None, **setting):
         """Process dataset and create dataset
 
         Directory Tree:
@@ -105,9 +104,8 @@ class Sysevr(Dataset):
                 - 'AF': API Function Call
                 - 'AU': Array Usage
                 - 'PU': Pointer Usage
-            sample_size <int, None, optional>: How many samples are used for 
-                                               processing.
-            **config <dict, optional>: The optional setting for selected methods
+            range_ <int, None, optional>: How many samples are used for processing.
+            **setting <dict, optional>: The optional setting for selecte methods
 
         """
         cooked_path = self._datapath + 'Cooked/'
@@ -119,7 +117,7 @@ class Sysevr(Dataset):
                 'sysevr',
             ]
         if 'sysevr' in methods:
-            sysevr(cooked_path, file_list, 'cgd', sample_size, **setting)
+            sysevr(cooked_path, file_list, 'cgd', range_, **setting)
 
     def _selected(self, category):
         """Selected file by category

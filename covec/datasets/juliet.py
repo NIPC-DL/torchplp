@@ -65,8 +65,7 @@ class Juliet(Dataset):
                                           os.listdir(raw_path)[0])) as z:
             z.extractall(raw_path)
 
-    def process(self, methods=None, category=None, sample_size=None,
-                **setting):
+    def process(self, methods=None, category=None, range_=None, **setting):
         """Process dataset and create dataset
 
         Directory Tree:
@@ -83,18 +82,21 @@ class Juliet(Dataset):
                 - 'AF': API Function Call
                 - 'AU': Array Usage
                 - 'PU': Pointer Usage
-            sample_size <int, None, optional>: How many samples are used for 
+            range_ <int, None, optional>: How many samples are used for 
                                                processing.
-            **config <dict, optional>: The optional setting for selected methods
+            **setting <dict, optional>: The optional setting for selected methods
 
         """
+        cooked_path = self._datapath + 'Cooked/'
+        if not os.path.exists(cooked_path):
+            os.makedirs(cooked_path)
         file_list = self._selected(category)
         if not methods:
             methods = [
                 'sysevr',
             ]
         if 'sysevr' in methods:
-            sysevr(file_list, 'sc', sample_size, **setting)
+            sysevr(cooked_path, file_list, 'sc', range_, **setting)
 
     def _selected(self, category):
         """Selected file by category

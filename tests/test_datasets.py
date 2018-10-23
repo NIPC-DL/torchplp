@@ -32,7 +32,13 @@ def test_sysevr():
     data.process(
         category=[
             'AF',
-        ], sample_size=20)
+        ],
+        range_=10000,
+        wm_setting={
+            'min_count': 0,
+            'iter': 5
+        },
+    )
 
 
 if __name__ == '__main__':
