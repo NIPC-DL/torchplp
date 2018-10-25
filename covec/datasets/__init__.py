@@ -7,9 +7,9 @@ Email: verf@protonmail.com
 License: MIT
 """
 from .juliet import Juliet
-from .sysevr import Sysevr
+from .sysevr import SySeVR
 
 __all__ = [
     'Juliet',
-    'Sysevr',
+    'SySeVR',
 ]

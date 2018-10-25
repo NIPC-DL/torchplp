@@ -12,11 +12,12 @@ import zipfile
 from .utils import download_file, git_clone_file
 from .constants import DOWNLOAD_URL, JULIET_CATEGORY, SYSEVR_CATEGORY
 from .models import Dataset
-from covec.processor import sysevr
+from covec.processor import Textmod, Word2Vec
+from covec.utils.loader import loader_cgd
 
 
-class Sysevr(Dataset):
-    """Sysevr <https://github.com/SySeVR/SySeVR> 
+class SySeVR(Dataset):
+    """SySeVR <https://github.com/SySeVR/SySeVR> 
     
     
     SySeVR: A Framework for Using Deep Learning to Detect Software
@@ -32,11 +33,8 @@ class Sysevr(Dataset):
     """
 
     def __init__(self, datapath, download=False):
-        datapath = os.path.expanduser(datapath)
-        # Make sure directory path end with '/'
-        if datapath[-1] != '/':
-            datapath += '/'
-        self._datapath = datapath + "SySeVR/"
+        super().__init__(datapath)
+        self._datapath = self._datapath + "SySeVR/"
         if not os.path.exists(self._datapath):
             os.makedirs(self._datapath)
         if download:
@@ -86,54 +84,24 @@ class Sysevr(Dataset):
                         os.path.join(root, file), os.path.join(raw_path, file))
                     os.rmdir(root)
 
-    def process(self, methods=None, category=None, range_=None, **setting):
-        """Process dataset and create dataset
-
-        Directory Tree:
-            <datapath>/SySeVR
-            TODO: w
+    def data(self, category=None):
+        """Process dataset and create vector dataset
 
         Args:
-            method <None, list>: The process methods used on dataset
-                - None, default: use all methods
-                - 'sysevr': source from arXiv:1807.06756
-            category <None, list>: The parts of Juliet Test Suite used on 
-                                   dataset
+            category <None, list>: The parts of Juliet Test Suite used on dataset
                 - None, default: use all categoary
                 - 'AE': Arithmetic Expression
                 - 'AF': API Function Call
                 - 'AU': Array Usage
                 - 'PU': Pointer Usage
-            range_ <int, None, optional>: How many samples are used for processing.
-            **setting <dict, optional>: The optional setting for selecte methods
 
         """
-        cooked_path = self._datapath + 'Cooked/'
-        if not os.path.exists(cooked_path):
-            os.makedirs(cooked_path)
         file_list = self._selected(category)
-        if not methods:
-            methods = [
-                'sysevr',
-            ]
-        if 'sysevr' in methods:
-            sysevr(cooked_path, file_list, 'cgd', range_, **setting)
+        x_set, y_set = loader_cgd(file_list)
+        return x_set, y_set
 
     def _selected(self, category):
-        """Selected file by category
-        
-        Args:
-            category <None, list>: The parts of Juliet Test Suite used on dataset
-            - None, default: use all categoary
-            - 'AE': Arithmetic Expression
-            - 'AF': API Function Call
-            - 'AU': Array Usage
-            - 'PU': Pointer Usage
-        
-        Return:
-            sel_files <list>: file path list selected by category
-            
-        """
+        """Select file from category"""
         sysevr_raw_path = self._datapath + 'Raw/'
         area = []
         if category:
@@ -141,7 +109,6 @@ class Sysevr(Dataset):
                 area.append(SYSEVR_CATEGORY[i])
         else:
             area = SYSEVR_CATEGORY.values()
-        print(area)
         file_list = []
         for root, _, files in os.walk(sysevr_raw_path):
             for file in files:

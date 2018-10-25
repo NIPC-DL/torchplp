@@ -8,7 +8,9 @@ Email: verf@protonmail.com
 License: MIT
 """
 import os
-from covec.datasets import Juliet, Sysevr
+from covec.datasets import Juliet, SySeVR
+from covec.processor import Textmod, Word2Vec
+from multiprocessing import cpu_count
 
 test_path = os.path.expanduser('~/WorkSpace/Test/covec_test/')
 
@@ -26,19 +28,16 @@ def test_juliet():
 
 def test_sysevr():
     if not os.path.exists(test_path + 'SySeVR/Raw/'):
-        data = Sysevr(test_path, download=True)
+        dataset = SySeVR(test_path, download=True)
     else:
-        data = Sysevr(test_path, download=False)
-    data.process(
-        category=[
-            'AF',
-        ],
-        range_=10000,
-        wm_setting={
-            'min_count': 0,
-            'iter': 5
-        },
-    )
+        dataset = SySeVR(test_path, download=False)
+    x_set, y_set = dataset.data([
+        'AF',
+    ])
+    wm = Word2Vec(size=20, min_count=1, workers=12)
+    pr = Textmod(wm)
+    pr.process(test_path + 'SySeVR/', x_set, 'cgd')
+    wm.save(test_path + 'SySeVR/Cooked/wm.model')
 
 
 if __name__ == '__main__':

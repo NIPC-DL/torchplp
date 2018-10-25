@@ -9,16 +9,15 @@ License: MIT
 import yaml
 
 
-class Config:
+class Configer:
     def __init__(self):
-        self._data = None
+        pass
 
-    def load(self, path):
+    @staticmethod
+    def load(path):
         try:
             with open(path, 'r', encoding='utf-8') as f:
-                self._data = yaml.load(f)
+                config = yaml.load(f)
         except FileNotFoundError:
             print(f'{path} not found')
-
-
-config = Config()
+        return config

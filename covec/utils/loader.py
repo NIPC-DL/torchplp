@@ -6,6 +6,7 @@ Author: Verf
 Email: verf@protonmail.com
 License: MIT
 """
+import fileinput
 import clang.cindex as cc
 from .astree import ASTNode, ASTKind
 from tempfile import NamedTemporaryFile
@@ -59,35 +60,35 @@ def loader_cc(data):
     return packer_cc(tu.cursor)
 
 
-def loader_cgd(path):
+def loader_cgd(file_list):
     """Load code gadget file from path
 
     cgd file is a file looks like:
-        < title >
-        < function name >
-        < code block >
-        < label >
-        < '-'*n, n>5 >
-        < title >
+        ...
+        title
+        function name
+        code block
+        label
+        '-'*n, n>5
+        title
         ...
 
     Args:
         path <str>: path of the file
     
     Return:
-        set of cgd_list:
-        (
-            (cgd, label),
-            ...
-        )
+        x_set <list>: code blocks
+        y_set <list>: labels
     """
-    cgd_list = []
-    with open(path, 'r', encoding='utf-8') as f:
+    x_set = []
+    y_set = []
+    with fileinput.input(files=file_list) as f:
         frag = []
         for line in f:
             if '-' * 5 not in line:
                 frag.append(line[:-1])
             else:
-                cgd_list.append(frag)
+                x_set.append(frag[2:-1])
+                y_set.append(frag[-1])
                 frag = []
-    return ((x[2:-1], x[-1]) for x in cgd_list)
+    return x_set, y_set

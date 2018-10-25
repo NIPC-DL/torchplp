@@ -6,8 +6,10 @@ Author: Verf
 Email: verf@protonmail.com
 License: MIT
 """
-from .sysevr import sysevr
+from .textmod import Textmod
+from .embedding import Word2Vec
 
 __all__ = [
-    'sysevr',
+    'Textmod',
+    'Word2Vec',
 ]
