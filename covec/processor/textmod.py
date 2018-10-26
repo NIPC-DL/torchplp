@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-sysevr.py - The sysevr processing methods for datasets
+sysevr.py - The Text Model Processor
 
 Author: Verf
 Email: verf@protonmail.com
