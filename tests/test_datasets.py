@@ -31,9 +31,7 @@ def test_sysevr():
         dataset = SySeVR(test_path, download=True)
     else:
         dataset = SySeVR(test_path, download=False)
-    x_set, y_set = dataset.data([
-        'AF',
-    ])
+    x_set, y_set = dataset.data(['AF'])
     wm = Word2Vec(size=20, min_count=1, workers=12)
     pr = Textmod(wm)
     pr.process(test_path + 'SySeVR/', x_set, 'cgd')

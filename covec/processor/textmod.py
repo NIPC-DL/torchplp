@@ -46,37 +46,18 @@ def cutlist(l, size):
     for i in range(0, len(l), size):
         yield l[i:i + size]
 
-def standardize(codes):
-    star = []
-    ast = loader_cc(codes)
-    parser = Parser(ast)
-    var_decl = parser.walker(lambda x: x.kind == 'VAR_DECL')
-    var_names = [x.data for x in var_decl]
-    fun_decl = parser.walker(lambda x: x.kind == 'FUNCTION_DECL')
-    fun_names = [x.data for x in fun_decl]
-    for line in code:
-        tokens = code_split(line)
-        for ind, val in enumerate(tokens):
-            if val in var_names:
-                tokens[ind] = 'var' + str(var_names.index(val))
-            if val in fun_names:
-                tokens[ind] = 'fun' + str(fun_names.index(val))
-            # some long data that can not parsed by libclang
-            if re.match(r'^CWE\d{2,3}_.*Data$', val):
-                tokens[ind] = 'varx'
-        star.append(tokens)
-    # filter the None data in star
-    star = [x for x in star if x]
-    return star
 
-def symbolize(cgd_list):
-    """transform code gadget to symbolic representation
+def standarlize(cgd_list):
+    """
+    This function replace the user-defined variable and function name
+    to fixed name such as var0, var1 and fun0, fun1, which we called 
+    standarlize. In SySeVR, they called this procedure symbolize.
     
     Args:
         cgd_list <list>: The list of code gadget
 
     Return:
-        srl <list>: The symbolic representation list of code gadget
+        srl <list>: The standarlize representation list of code gadget
     """
 
     srl = []
@@ -107,75 +88,94 @@ def symbolize(cgd_list):
     return srl
 
 
-def vectorlize(srl, wordsmodel, length):
-    """Create vector representation file from given symbolic representation
+def vectorlize(srl, wordsmodel, vector_length):
+    """
+    This function converts the standarlized codes into a vector representation 
+    through a words model.
     
     Args:
         srl <list>: The list of symbolic representation
         wordsmodel <covec.processor.WordsModel.model>: The words model
-        length <int>: All vectors will be set to a fixed length by this value
+        vector_length <int>: All vectors will be set to a fixed length by this value
 
     """
     vrl = []
     for symr in srl:
         sent_set = [y for x in symr for y in wordsmodel[x]]
-        if len(sent_set) < length:
-            padding = np.asarray([[0 for x in range(100)]
-                                  for y in range(length - len(sent_set))])
+        if len(sent_set) < vector_length:
+            padding = np.asarray(
+                [[0 for x in range(100)]
+                 for y in range(vector_length - len(sent_set))])
             sent_set.extend(padding)
-            assert len(sent_set) == length
-        vrl.append(sent_set[:length])
+            assert len(sent_set) == vector_length
+        vrl.append(sent_set[:vector_length])
     return vrl
 
 
 class Textmod(Processor):
     """The Text Mod Processor
     
-    This methods is based on the paper SySeVR(arXiv:1807.06756) but have little difference,
+    This methods is based on the paper SySeVR(arXiv:1807.06756) but have little 
+    difference, so we called it Text Module. Because this method treats the 
+    program code as natural language text.
+
+    Args:
+        wordsmodel <covec.processor.WordsModel>: The words model map words to 
+            their vector representation
+        vector_length <int>: The text module usually used on LSTM or other 
+            neural networks, and they all need fixed length input, so this 
+            parameter limited the length of output vector, if they are shorter
+            than this number, a full-zero padding will append to the end of them,
+            and if they are large than this number, we will tuncat from end
+            to head to ensure they have fixed length.
         
     """
 
-    def __init__(self, wordsmodel, length=50):
+    def __init__(self, wordsmodel, vector_length=50):
         self._wm = wordsmodel
-        self._length = length
+        self._vector_length = vector_length
 
-    def process(self, root, data, type_, output=True, chunks=10000):
-        cooked_path = root + 'Cooked/'
+    def process(self, data, type_, output=None, chunks=None):
+        """Process input data and output or create vector data
+        
+        Args:
+            data <iterable>: The list of other iterable object that can processed
+                one by one
+            type_ <str>: The type of input data
+                - 'sc': Source Code
+                - 'cgd': Code Gadget
+            output <str, None, optional>: Default is None, this function will 
+                directly return the vector data, if set as path, this function 
+                will create the Cooked directory in this path and output the 
+                npy format file in Cooked directory.
+            chunks <int, None, optional>: Default is None. This variable only 
+                used when output is a path, and this function will split the 
+                output in multiple files. Only recommended when your computer's
+                memory is too small to generate all the data at once.
+            
+        """
+        if output:
+            cooked_path = output + 'Cooked/'
         if not os.path.exists(cooked_path):
             os.makedirs(cooked_path)
         if type_ == 'sc':
             pass
         elif type_ == 'cgd':
             # srl - symbolic representation list
-            srl = symbolize(data
-def main():
-    pass
-
-if __name__ == '__main__':
-    main())
-            sents = [y for x in 
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()srl for y in x]
-            self._wm.train(sents
-def main():
-    pass
-
-if __name__ == '__main__':
-    main())
+            srl = standarlize(data)
             # vrl - vector representation list
-            if output:
+            if bool(output) and bool(chunks):
                 for ind, sr in enumerate(cutlist(srl, chunks)):
-                    vrl = vectorlize(sr, self._wm.model, self._length)
+                    vrl = vectorlize(sr, self._wm.model, self._vector_length)
                     x_set = np.asarray(vrl)
                     np.save(cooked_path + f'textmod_vec{ind}.npy', x_set)
                 return None
+            elif bool(output):
+                vrl = vectorlize(srl, self._wm.model, self._vector_length)
+                x_set = np.asarray(vrl)
+                np.save(cooked_path, f'textmod_vec.npy', x_set)
             else:
-
-                vrl = vectorlize(srl, self._wm.model, self._length)
+                vrl = vectorlize(srl, self._wm.model, self._vector_length)
                 return np.asarray(vrl)
         else:
             raise ValueError(f"type_ must in ['sc', 'cgd', ]")
-        return vrl
