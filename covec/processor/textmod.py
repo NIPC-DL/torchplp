@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-sysevr.py - The sysevr processing methods for datasets
+sysevr.py - The Text Model Processor
 
 Author: Verf
 Email: verf@protonmail.com
@@ -46,6 +46,7 @@ def cutlist(l, size):
     for i in range(0, len(l), size):
         yield l[i:i + size]
 
+
 def standardize(codes):
     star = []
     ast = loader_cc(codes)
@@ -54,7 +55,7 @@ def standardize(codes):
     var_names = [x.data for x in var_decl]
     fun_decl = parser.walker(lambda x: x.kind == 'FUNCTION_DECL')
     fun_names = [x.data for x in fun_decl]
-    for line in code:
+    for line in codes:
         tokens = code_split(line)
         for ind, val in enumerate(tokens):
             if val in var_names:
@@ -68,6 +69,7 @@ def standardize(codes):
     # filter the None data in star
     star = [x for x in star if x]
     return star
+
 
 def symbolize(cgd_list):
     """transform code gadget to symbolic representation
@@ -147,24 +149,7 @@ class Textmod(Processor):
             pass
         elif type_ == 'cgd':
             # srl - symbolic representation list
-            srl = symbolize(data
-def main():
-    pass
-
-if __name__ == '__main__':
-    main())
-            sents = [y for x in 
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()srl for y in x]
-            self._wm.train(sents
-def main():
-    pass
-
-if __name__ == '__main__':
-    main())
+            srl = symbolize(data)
             # vrl - vector representation list
             if output:
                 for ind, sr in enumerate(cutlist(srl, chunks)):

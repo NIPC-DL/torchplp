@@ -8,8 +8,11 @@ License: MIT
 """
 from .textmod import Textmod
 from .embedding import Word2Vec
+from .models import Processor, WordsModel
 
 __all__ = [
     'Textmod',
     'Word2Vec',
+    'Processor',
+    'WordsModel',
 ]

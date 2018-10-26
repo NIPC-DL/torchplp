@@ -9,8 +9,12 @@ License: MIT
 import abc
 
 
-class Processor:
+class Processor(metaclass=abc.ABCMeta):
     """The upper class of processor"""
+
+    @abc.abstractmethod
+    def process(self):
+        raise NotImplementedError
 
 
 class WordsModel(metaclass=abc.ABCMeta):
