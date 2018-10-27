@@ -9,7 +9,7 @@ License: MIT
 from .models import Processor
 
 
-class TreeMod(Processor):
+class TreeModel(Processor):
     """
     
     Args:

@@ -12,6 +12,9 @@ import abc
 class Processor(metaclass=abc.ABCMeta):
     """The upper class of processor"""
 
+    def __repr__(self):
+        return self.__class__.__name__
+
     @abc.abstractmethod
     def process(self):
         raise NotImplementedError
@@ -26,6 +29,6 @@ class WordsModel(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def model(self):
-        """Return trained dict"""
+    def __getitem__(self, key):
+        """Work as dict"""
         raise NotImplementedError

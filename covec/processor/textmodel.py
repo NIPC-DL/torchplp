@@ -9,8 +9,6 @@ License: MIT
 import os
 import re
 import numpy as np
-from pprint import pprint
-from .constants import KEYWORD, DEFINED
 from .models import Processor
 from .parser import Parser
 from .embedding import Word2Vec
@@ -88,20 +86,20 @@ def standarlize(cgd_list):
     return srl
 
 
-def vectorlize(srl, wordsmodel, vector_length):
+def vectorlize(srl, embedder, vector_length):
     """
     This function converts the standarlized codes into a vector representation 
     through a words model.
     
     Args:
         srl <list>: The list of symbolic representation
-        wordsmodel <covec.processor.WordsModel.model>: The words model
+        embedder <covec.processor.WordsModel.model>: The words model that map words to vector
         vector_length <int>: All vectors will be set to a fixed length by this value
 
     """
     vrl = []
     for symr in srl:
-        sent_set = [y for x in symr for y in wordsmodel[x]]
+        sent_set = [y for x in symr for y in embedder[x]]
         if len(sent_set) < vector_length:
             padding = np.asarray(
                 [[0 for x in range(100)]
@@ -112,17 +110,17 @@ def vectorlize(srl, wordsmodel, vector_length):
     return vrl
 
 
-class Textmod(Processor):
+class TextModel(Processor):
     """The Text Mod Processor
     
     This methods is based on the paper SySeVR(arXiv:1807.06756) but have little 
-    difference, so we called it Text Module. Because this method treats the 
+    difference, so we called it Text Model. Because this method treats the 
     program code as natural language text.
 
     Args:
         wordsmodel <covec.processor.WordsModel>: The words model map words to 
             their vector representation
-        vector_length <int>: The text module usually used on LSTM or other 
+        vector_length <int>: The text model usually used on LSTM or other 
             neural networks, and they all need fixed length input, so this 
             parameter limited the length of output vector, if they are shorter
             than this number, a full-zero padding will append to the end of them,
@@ -131,50 +129,37 @@ class Textmod(Processor):
         
     """
 
-    def __init__(self, vector_length=50):
+    def __init__(self, embedder, vector_length=50):
+        self._embedder = embedder
         self._vector_length = vector_length
 
-    def process(self, data, type_, output=None, chunks=None):
+    def process(self, data, type_):
         """Process input data and output or create vector data
         
         Args:
-            data <iterable>: The list of other iterable object that can processed
+            data <iterable>: The list of iterable object that can processed
                 one by one
             type_ <str>: The type of input data
                 - 'sc': Source Code
                 - 'cgd': Code Gadget
-            output <str, None, optional>: Default is None, this function will 
-                directly return the vector data, if set as path, this function 
-                will create the Cooked directory in this path and output the 
-                npy format file in Cooked directory.
-            chunks <int, None, optional>: Default is None. This variable only 
-                used when output is a path, and this function will split the 
-                output in multiple files. Only recommended when your computer's
-                memory is too small to generate all the data at once.
+            embedder <covec.processor.WordsModel>: The words embedding module
+            output <str>: The path where to output vector data
             
         """
-        if output:
-            cooked_path = output + 'Cooked/'
-        if not os.path.exists(cooked_path):
-            os.makedirs(cooked_path)
         if type_ == 'sc':
             pass
         elif type_ == 'cgd':
-            # srl - symbolic representation list
+            # srl - standarlize representation list
             srl = standarlize(data)
+            print('standarlize finish')
             # vrl - vector representation list
-            if bool(output) and bool(chunks):
-                for ind, sr in enumerate(cutlist(srl, chunks)):
-                    vrl = vectorlize(sr, self._wm.model, self._vector_length)
-                    x_set = np.asarray(vrl)
-                    np.save(cooked_path + f'textmod_vec{ind}.npy', x_set)
-                return None
-            elif bool(output):
-                vrl = vectorlize(srl, self._wm.model, self._vector_length)
-                x_set = np.asarray(vrl)
-                np.save(cooked_path, f'textmod_vec.npy', x_set)
-            else:
-                vrl = vectorlize(srl, self._wm.model, self._vector_length)
-                return np.asarray(vrl)
+            sents = [y for x in srl for y in x]
+            # train words model
+            self._embedder.train(sents)
+            print('embedding train finish')
+            # words embedding
+            vrl = vectorlize(srl, self._embedder, self._vector_length)
+            print('vectorlize finish')
+            return vrl
         else:
             raise ValueError(f"type_ must in ['sc', 'cgd', ]")

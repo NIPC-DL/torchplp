@@ -12,7 +12,6 @@ import zipfile
 from .utils import download_file
 from .constants import DOWNLOAD_URL, JULIET_CATEGORY
 from .models import Dataset
-from covec.processor import Textmod
 
 
 class Juliet(Dataset):
@@ -62,36 +61,26 @@ class Juliet(Dataset):
                                           os.listdir(raw_path)[0])) as z:
             z.extractall(raw_path)
 
-    def process(self, processor=None, category=None, range_=None, **setting):
-        """Process dataset and create dataset
-
-        Directory Tree:
-            <datapath>/Juliet_Test_Suite
-            TODO: w
-
+    def process(self, processor, embedder, category=None):
+        """Process the selected data into vector by given processor and embedder
+        
         Args:
-            processor <None, list>: The processor used on dataset
-                - None, default: use all processor
-                - 'textmod': source from arXiv:1807.06756
+            processor <covec.processor.Processor>: The process methods
+            embedder <covec.processor.WordsModel>: The words embedding methods
             category <None, list>: The parts of Juliet Test Suite used on dataset
                 - None, default: use all categoary
                 - 'AE': Arithmetic Expression
                 - 'AF': API Function Call
                 - 'AU': Array Usage
                 - 'PU': Pointer Usage
-            range_ <int, None, optional>: How many samples are used for 
-                                               processing.
-            **setting <dict, optional>: The optional setting for selected processor
-
+        TODO:
         """
+
         cooked_path = self._datapath + 'Cooked/'
         if not os.path.exists(cooked_path):
             os.makedirs(cooked_path)
         file_list = self._selected(category)
-        if not processor:
-            processor = [
-                'textmod',
-            ]
+        pass
 
     def _selected(self, category):
         """Selected file by category

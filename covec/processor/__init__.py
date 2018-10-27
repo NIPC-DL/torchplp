@@ -6,12 +6,12 @@ Author: Verf
 Email: verf@protonmail.com
 License: MIT
 """
-from .textmod import Textmod
+from .textmodel import TextModel
 from .embedding import Word2Vec
 from .models import Processor, WordsModel
 
 __all__ = [
-    'Textmod',
+    'TextModel',
     'Word2Vec',
     'Processor',
     'WordsModel',
