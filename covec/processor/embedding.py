@@ -22,6 +22,9 @@ class Word2Vec(WordsModel):
     def __init__(self, **kwargs):
         self._model = gensim.models.Word2Vec(**kwargs)
 
+    def __getitem__(self, key):
+        return self._model[key]
+
     def train(self, sents):
         """Train words model by given sentences
         
@@ -50,7 +53,3 @@ class Word2Vec(WordsModel):
 
         """
         self._model.save(path)
-
-    @property
-    def model(self):
-        return self._model

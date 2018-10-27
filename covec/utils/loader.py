@@ -89,6 +89,6 @@ def loader_cgd(file_list):
                 frag.append(line[:-1])
             else:
                 x_set.append(frag[2:-1])
-                y_set.append(frag[-1])
+                y_set.append(int(frag[-1]))
                 frag = []
     return x_set, y_set
