@@ -131,8 +131,7 @@ class Textmod(Processor):
         
     """
 
-    def __init__(self, wordsmodel, vector_length=50):
-        self._wm = wordsmodel
+    def __init__(self, vector_length=50):
         self._vector_length = vector_length
 
     def process(self, data, type_, output=None, chunks=None):
