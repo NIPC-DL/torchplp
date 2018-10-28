@@ -20,10 +20,10 @@ from covec.utils.loader import loader_cgd
 
 
 class SySeVR(Dataset):
-    """SySeVR <https://github.com/SySeVR/SySeVR> 
+    """SySeVR Dataset <https://github.com/SySeVR/SySeVR> 
     
-    
-    SySeVR: A Framework for Using Deep Learning to Detect Software
+    From Paper:
+        SySeVR: A Framework for Using Deep Learning to Detect Software
             Vulnerabilities <https://arxiv.org/abs/1807.06756>
 
     Args:
@@ -61,7 +61,7 @@ class SySeVR(Dataset):
             if cache:
                 np.savez(self._vecpath, self.X, self.Y)
 
-    def download(self):
+    def download(self) -> None:
         """Download SySeVR Datasets from their Github Repo
 
         Directory Tree:
