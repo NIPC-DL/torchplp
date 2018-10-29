@@ -61,7 +61,7 @@ class SySeVR(Dataset):
             if cache:
                 np.savez(self._vecpath, self.X, self.Y)
 
-    def download(self) -> None:
+    def download(self):
         """Download SySeVR Datasets from their Github Repo
 
         Directory Tree:
@@ -127,7 +127,15 @@ class SySeVR(Dataset):
         assert len(x_set) == len(y_set)
         return np.asarray(x_set), np.asarray(y_set)
 
-    def get_dataset(self, validation=None):
+    def torchset(self, validation=None):
+        """Return the Pytorch Dataset Object
+        
+        Args:
+            validation <None, int>: If set a int, will return the train dataset 
+                and valid dataset in folds.
+
+        """
+
         if validation:
             total_size = self.X.shape[0]
             fold = round(total_size / validation)

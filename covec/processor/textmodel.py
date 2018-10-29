@@ -86,7 +86,7 @@ def standarlize(cgd_list):
     return srl
 
 
-def vectorlize(srl, embedder, vector_length):
+def vectorlize(srl, embedder, vsize):
     """
     This function converts the standarlized codes into a vector representation 
     through a words model.
@@ -94,19 +94,17 @@ def vectorlize(srl, embedder, vector_length):
     Args:
         srl <list>: The list of symbolic representation
         embedder <covec.processor.WordsModel.model>: The words model that map words to vector
-        vector_length <int>: All vectors will be set to a fixed length by this value
+        vsize <int>: All vectors will be set to a fixed size by this value
 
     """
     vrl = []
     for symr in srl:
-        sent_set = [y for x in symr for y in embedder[x]]
-        if len(sent_set) < vector_length:
-            padding = np.asarray(
-                [[0 for x in range(100)]
-                 for y in range(vector_length - len(sent_set))])
-            sent_set.extend(padding)
-            assert len(sent_set) == vector_length
-        vrl.append(sent_set[:vector_length])
+        vecr = [y for x in symr for y in embedder[x]]
+        wsize = vecr[0].shape[0]
+        if len(vecr) < vsize:
+            padding = [np.zeros(wsize) for x in range(vsize - len(vecr))]
+            vecr.extend(padding)
+        vrl.append(vecr[:vsize])
     return vrl
 
 
@@ -120,7 +118,7 @@ class TextModel(Processor):
     Args:
         wordsmodel <covec.processor.WordsModel>: The words model map words to 
             their vector representation
-        vector_length <int>: The text model usually used on LSTM or other 
+        vsize <int>: The text model usually used on LSTM or other 
             neural networks, and they all need fixed length input, so this 
             parameter limited the length of output vector, if they are shorter
             than this number, a full-zero padding will append to the end of them,
@@ -129,9 +127,9 @@ class TextModel(Processor):
         
     """
 
-    def __init__(self, embedder, vector_length=50):
+    def __init__(self, embedder, vsize=50):
         self._embedder = embedder
-        self._vector_length = vector_length
+        self._vsize = vsize
 
     def process(self, data, type_):
         """Process input data and output or create vector data
@@ -151,15 +149,12 @@ class TextModel(Processor):
         elif type_ == 'cgd':
             # srl - standarlize representation list
             srl = standarlize(data)
-            print('standarlize finish')
             # vrl - vector representation list
             sents = [y for x in srl for y in x]
             # train words model
             self._embedder.train(sents)
-            print('embedding train finish')
             # words embedding
-            vrl = vectorlize(srl, self._embedder, self._vector_length)
-            print('vectorlize finish')
+            vrl = vectorlize(srl, self._embedder, self._vsize)
             return vrl
         else:
             raise ValueError(f"type_ must in ['sc', 'cgd', ]")
