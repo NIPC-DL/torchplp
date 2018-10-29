@@ -21,6 +21,7 @@ sdist/
 var/
 wheels/
 *.egg-info/
+.vscode/
 .installed.cfg
 *.egg
 MANIFEST
