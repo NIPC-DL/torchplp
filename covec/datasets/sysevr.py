@@ -122,8 +122,8 @@ class SySeVR(Dataset):
         file_list = self._selected(category)
         x_set, y_set = loader_cgd(file_list)
         print('cgd load finish')
-        x_set = processor.process(x_set[:1000], 'cgd')
-        y_set = y_set[:1000]
+        x_set = processor.process(x_set, 'cgd')
+        y_set = y_set
         assert len(x_set) == len(y_set)
         return np.asarray(x_set), np.asarray(y_set)
 
