@@ -10,7 +10,7 @@ def readme():
 
 setup(
     name='covec',
-    version='0.1dev',
+    version='0.1',
     author="NIPC-DL",
     author_email="verf@protonmail.com",
     description="Python Code Preprocessor for Machine Learning",
@@ -28,7 +28,6 @@ setup(
         'requests',
         'tqdm',
         'gensim',
-        'pyyaml',
     ],
     setup_requires=[
         "pytest-runner",
