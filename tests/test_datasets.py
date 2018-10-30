@@ -21,7 +21,8 @@ def test_sysevr():
     pr = TextModel(wm)
     dataset = SySeVR(test_path, pr, category=['AF'])
     train, valid = dataset.torchset(5)
-    train_loader = DataLoader(train, batch_size=64)
+    train_loader = DataLoader(train, batch_size=50)
+    print(train_loader)
 
 
 if __name__ == '__main__':
