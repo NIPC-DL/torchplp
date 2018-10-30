@@ -2,9 +2,9 @@
 """
 loader.py - Load data for further processing
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 import fileinput
 import clang.cindex as cc

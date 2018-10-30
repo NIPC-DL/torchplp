@@ -2,9 +2,9 @@
 """
 constants.py - The constants used for datasets
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 
 DOWNLOAD_URL = {

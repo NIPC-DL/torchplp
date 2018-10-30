@@ -2,9 +2,9 @@
 """
 parser.py - The data parser for covec
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 from collections import deque
 from covec.utils.astree import ASTNode
@@ -14,7 +14,7 @@ class Parser:
     """The AST Parser
     
     Args:
-        root <covec.processor.ASTNode>: The root node of AST
+        root(covec.processor.ASTNode): The root node of AST
     """
 
     def __init__(self, root):
@@ -29,9 +29,10 @@ class Parser:
         if selector not given, return list of all node.
 
         Args:
-            root <covec.processor.ASTNode>: The root node of AST selector <function, optional>: select which node you want
+            root(covec.processor.ASTNode): The root node of AST selector <function, optional>: select which node you want
+
         Return:
-            selected <list>: list of selected node
+            selected(list): list of selected node
         """
         selected = []
         queue = deque()

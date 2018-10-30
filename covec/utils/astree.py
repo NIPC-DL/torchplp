@@ -2,9 +2,9 @@
 """
 astree.py - Abstract Syntax Tree Structure
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 
 

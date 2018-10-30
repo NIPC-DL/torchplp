@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-juliet.py - Juliet Test Suite <https://samate.nist.gov/SRD/testsuite.php>
+juliet.py - Juliet Test Suite (https://samate.nist.gov/SRD/testsuite.php)
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 import os
 import re
@@ -17,10 +17,16 @@ from .models import Dataset
 class Juliet(Dataset):
     """Juliet Test Suite <https://samate.nist.gov/SRD/testsuite.php>
 
+    Directory Tree:
+        Juliet_Test_Suite
+            └── Raw
+                ├── C
+                └── Juliet_Test_Suite_v1.3_for_C_Cpp.zip
+
     Args:
-        root <str>: Directory of dataset, will automately create Juliet_Test_Suite directory in it.
-        download <bool, optional>: If true, download dataset from internet, default false.
-        proxy <str>: The proxy for download.
+        root (str): Directory of dataset, will automately create Juliet_Test_Suite directory in it.
+        download (bool, optional): If true, download dataset from internet, default false.
+        proxy (str): The proxy for download.
             eg. 'http://user:pass@host:port/'
                 'socks5://user:pass@host:port'
 
@@ -37,14 +43,10 @@ class Juliet(Dataset):
     def download(self, proxy):
         """Download Juliet Test Suiet from NIST website
 
-        Directory Tree:
-           <datapath>/Juliet_Test_Suite
-                └── Raw
-                    ├── C
-                    └── Juliet_Test_Suite_v1.3_for_C_Cpp.zip
+
 
         Args:
-            proxy <str>: proxy used for download.
+            proxy (str): proxy used for download.
                 eg. 'http://user:pass@host:port/'
                     'socks5://user:pass@host:port'
 
@@ -65,9 +67,9 @@ class Juliet(Dataset):
         """Process the selected data into vector by given processor and embedder
         
         Args:
-            processor <covec.processor.Processor>: The process methods
-            embedder <covec.processor.WordsModel>: The words embedding methods
-            category <None, list>: The parts of Juliet Test Suite used on dataset
+            processor (covec.processor.Processor): The process methods
+            embedder (covec.processor.WordsModel): The words embedding methods
+            category (None, list): The parts of Juliet Test Suite used on dataset
                 - None, default: use all categoary
                 - 'AE': Arithmetic Expression
                 - 'AF': API Function Call
@@ -86,7 +88,7 @@ class Juliet(Dataset):
         """Selected file by category
 
         Args:
-            category <None, list>: The parts of Juliet Test Suite used on dataset
+            category (None, list): The parts of Juliet Test Suite used on dataset
             - None, default: use all categoary
             - 'AE': Arithmetic Expression
             - 'AF': API Function Call
@@ -94,7 +96,7 @@ class Juliet(Dataset):
             - 'PU': Pointer Usage
         
         Return:
-            file_list <list>: file path list selected by category
+            file_list (list): file path list selected by category
             
         """
         juliet_source_path = self._datapath + 'Raw/C/testcases/'

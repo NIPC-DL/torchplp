@@ -2,9 +2,9 @@
 """
 sysevr.py - The Text Model Processor
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 import os
 import re
@@ -19,26 +19,29 @@ def code_split(line):
     """split code line into atom
     
     Args:
-        line: The code line
+        line (str): The code line
     
     Return:
-        tokens <list>: The list of atom token for code line
+        tokens (list): The list of atom token for code line
+
     """
     return list(
         filter(lambda x: x and x not in [' ', ''], re.split(r'(\W|\s)', line)))
 
 
 def cutlist(l, size):
-    """The geneator function cut list into sevevl blocks,
+    """
+    The geneator function cut list into sevevl blocks,
     if the list can not divide equally, this function will 
     keep the other blocks except the last one equal
     
     Args:
-        l <list>: The iterable object
-        size <int>: The number of block size you want to divide
+        l (list): The iterable object
+        size (int): The number of block size you want to divide
     
     Return:
         yield every blocks
+
     """
 
     for i in range(0, len(l), size):
@@ -52,10 +55,11 @@ def standarlize(cgd_list):
     standarlize. In SySeVR, they called this procedure symbolize.
     
     Args:
-        cgd_list <list>: The list of code gadget
+        cgd_list (list): The list of code gadget
 
     Return:
-        srl <list>: The standarlize representation list of code gadget
+        srl (list): The standarlize representation list of code gadget
+
     """
 
     srl = []
@@ -92,9 +96,9 @@ def vectorlize(srl, embedder, vsize):
     through a words model.
     
     Args:
-        srl <list>: The list of symbolic representation
-        embedder <covec.processor.WordsModel.model>: The words model that map words to vector
-        vsize <int>: All vectors will be set to a fixed size by this value
+        srl (list): The list of symbolic representation
+        embedder (covec.processor.WordsModel.model): The words model that map words to vector
+        vsize (int): All vectors will be set to a fixed size by this value
 
     """
     vrl = []
@@ -109,8 +113,7 @@ def vectorlize(srl, embedder, vsize):
 
 
 class TextModel(Processor):
-    """The Text Mod Processor
-    
+    """
     This methods is based on the paper SySeVR(arXiv:1807.06756) but have little 
     difference, so we called it Text Model. Because this method treats the 
     program code as natural language text.
@@ -135,14 +138,17 @@ class TextModel(Processor):
         """Process input data and output or create vector data
         
         Args:
-            data <iterable>: The list of iterable object that can processed
+            data (iterable): The list of iterable object that can processed
                 one by one
-            type_ <str>: The type of input data
+            type_ (str): The type of input data
                 - 'sc': Source Code
                 - 'cgd': Code Gadget
-            embedder <covec.processor.WordsModel>: The words embedding module
-            output <str>: The path where to output vector data
-            
+            embedder (covec.processor.WordsModel): The words embedding module
+            output (str): The path where to output vector data
+        
+        Return:
+            vrl <list>: The vector representation data
+
         """
         if type_ == 'sc':
             pass

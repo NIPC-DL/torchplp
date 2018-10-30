@@ -2,9 +2,9 @@
 """
 models.py - The processor model defination
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 import abc
 

@@ -2,9 +2,9 @@
 """
 embedding.py - Provide word embedding methods
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 import gensim
 from .models import WordsModel
@@ -15,7 +15,7 @@ class Word2Vec(WordsModel):
        <https://en.wikipedia.org/wiki/Word2vec>
     
     Args:
-        parameter <dict>: The gensim.models.Word2Vec parameter
+        parameter (dict): The gensim.models.Word2Vec parameter
         
     """
 
@@ -29,7 +29,7 @@ class Word2Vec(WordsModel):
         """Train words model by given sentences
         
         Args:
-            sents <list>: The sentence list
+            sents (list): The sentence list
 
         """
         if self.isempty():
@@ -49,7 +49,7 @@ class Word2Vec(WordsModel):
         """Save words module
 
         Args:
-            path <str>: The save path
+            path (str): The save path
 
         """
         self._model.save(path)
