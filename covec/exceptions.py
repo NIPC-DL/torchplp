@@ -2,9 +2,9 @@
 """
 exceptions.py - covec exception definatioin
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 
 

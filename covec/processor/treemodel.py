@@ -2,9 +2,9 @@
 """
 treemod.py - The Tree Model Processor
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 from .models import Processor
 

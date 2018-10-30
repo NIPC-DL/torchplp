@@ -2,9 +2,9 @@
 """
 models.py - The covec dataset model defination
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 import os
 

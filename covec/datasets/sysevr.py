@@ -2,9 +2,9 @@
 """
 sysevr.py - SySeVr Dataset defination
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 import os
 import re
@@ -25,18 +25,29 @@ class SySeVR(Dataset):
     From Paper:
         SySeVR: A Framework for Using Deep Learning to Detect Software
             Vulnerabilities <https://arxiv.org/abs/1807.06756>
+    
+    Directory Tree:
+        SySeVR
+            ├── Raw
+            │   ├── API function call.txt
+            │   ├── Arithmetic expression.txt
+            │   ├── Array usage.txt
+            │   ├── Pointer usage.txt
+            │   └── SySeVR.git
+            └── TextModel_vec.npz
+
 
     Args:
-        datapath <str>: Directory of dataset, will automately create SySeVR directory in it.
-        processor <covec.processor.Processor>: The process methods
-        category <None, list>: The parts of Juliet Test Suite used on dataset
+        datapath (str): Directory of dataset, will automately create SySeVR directory in it.
+        processor (covec.processor.Processor): The process methods
+        category (None, list): The parts of Juliet Test Suite used on dataset
             - None, default: use all categoary
             - 'AE': Arithmetic Expression
             - 'AF': API Function Call
             - 'AU': Array Usage
             - 'PU': Pointer Usage
-        validation <int, optional>: Using n-folds validation or not
-        download <bool, optional>: If true, download dataset from internet, default false.
+        cache (bool, optional): Default is True to create cache file for vector data
+        download (bool, optional): If true, download dataset from internet, default false.
 
     """
 
@@ -62,28 +73,7 @@ class SySeVR(Dataset):
                 np.savez(self._vecpath, self.X, self.Y)
 
     def download(self):
-        """Download SySeVR Datasets from their Github Repo
-
-        Directory Tree:
-           <datapath>/SySeVR
-                    └── Raw
-                        ├── API function call.txt
-                        ├── Arithmetic expression.txt
-                        ├── Array usage.txt
-                        ├── Pointer usage.txt
-                        └── SySeVR.git
-                            ├── API function call.zip
-                            ├── Arithmetic expression.zip
-                            ├── Array usage.zip
-                            ├── library-API function calls.docx
-                            ├── List of the 126 CWE IDs.docx
-                            ├── Pointer usage.zip
-                            └── README.md
-
-        Args:
-            None
-
-        """
+        """Download SySeVR Datasets from their Github Repo"""
         url = DOWNLOAD_URL['sysevr']
         raw_path = self._datapath + 'Raw/'
         print(f'git clone from {url}')
@@ -109,9 +99,8 @@ class SySeVR(Dataset):
         """Process the selected data into vector by given processor and embedder
         
         Args:
-            processor <covec.processor.Processor>: The process methods
-            embedder <covec.processor.WordsModel>: The words embedding methods
-            category <None, list>: The parts of Juliet Test Suite used on dataset
+            processor (covec.processor.Processor): The process methods
+            category (None, list): The parts of Juliet Test Suite used on dataset
                 - None, default: use all categoary
                 - 'AE': Arithmetic Expression
                 - 'AF': API Function Call
@@ -131,7 +120,7 @@ class SySeVR(Dataset):
         """Return the Pytorch Dataset Object
         
         Args:
-            validation <None, int>: If set a int, will return the train dataset 
+            validation (None, int): If set a int, will return the train dataset 
                 and valid dataset in folds.
 
         """

@@ -2,7 +2,7 @@
 """
 __init__.py - cove init
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """

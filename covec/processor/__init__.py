@@ -2,9 +2,9 @@
 """
 This subpackage is the collection of all process for datasets
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 from .textmodel import TextModel
 from .embedding import Word2Vec

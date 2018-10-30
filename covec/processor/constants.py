@@ -2,9 +2,9 @@
 """
 constants.py - The constants variable for processor
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 DEFINED = [
     'char',

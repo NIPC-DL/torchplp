@@ -3,9 +3,9 @@
 test_juliet.py - test juliet class
 
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 import os
 from covec.datasets import Juliet, SySeVR

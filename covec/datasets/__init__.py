@@ -2,9 +2,9 @@
 """
 __init__.py - init of covec.datasets
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 from .juliet import Juliet
 from .sysevr import SySeVR

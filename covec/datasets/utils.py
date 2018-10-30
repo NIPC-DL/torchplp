@@ -2,9 +2,9 @@
 """
 utils.py - The utils function for datasets
 
-Author: Verf
-Email: verf@protonmail.com
-License: MIT
+:Author: Verf
+:Email: verf@protonmail.com
+:License: MIT
 """
 import os
 import requests
@@ -16,9 +16,9 @@ def download_file(url, path, proxy):
     """Donwloade file from url
 
     Args:
-        url <str>: download url
-        path <str>: saved path
-        proxy <str>: proxy used for download.
+        url (str): download url
+        path (str): saved path
+        proxy (str): proxy used for download.
                 eg. 'http://user:pass@host:port/'
                     'socks5://user:pass@host:port'
 
@@ -50,8 +50,8 @@ def git_clone_file(url, path):
     """git clone repo from url
 
     Args:
-        url <str>: git repo url
-        path <str>: saved path
+        url (str): git repo url
+        path (str): saved path
 
     """
     if os.path.exists('/usr/bin/git') or os.path.exists('/bin/git'):
