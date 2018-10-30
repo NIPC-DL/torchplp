@@ -1,5 +1,6 @@
 # Covec
-Covec is the collections of popular datasets and process methods for program analysis liks torchvision.  
+Covec is the collections of popular datasets and process methods for program analysis liks torchvision for visions.  
+This is a very early vision, just use it carefully.   
 
 # Install
 From source:
@@ -16,7 +17,7 @@ python setup.py install
 - **TODO** [Juliet Test Suite](https://samate.nist.gov/SRD/testsuite.php)
 
 # Processor
-- Text Model: NLP like process methods
+- Text Model: NLP like process methods, based on [arXiv:1807.06756](https://arxiv.org/abs/1807.06756)
 - **TODO** Tree Model: AST based process methods
 
 # Usage

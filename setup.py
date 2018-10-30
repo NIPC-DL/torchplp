@@ -13,7 +13,7 @@ setup(
     version='0.1',
     author="NIPC-DL",
     author_email="verf@protonmail.com",
-    description="Python Code Preprocessor for Machine Learning",
+    description="Python Code Processor for Machine Learning",
     long_description=readme(),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -28,11 +28,5 @@ setup(
         'requests',
         'tqdm',
         'gensim',
-    ],
-    setup_requires=[
-        "pytest-runner",
-    ],
-    tests_require=[
-        "pytest",
     ],
 )
