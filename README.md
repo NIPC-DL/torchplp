@@ -17,7 +17,7 @@ python setup.py install
 
 # Processor
 - Text Model: NLP like process methods
-- **TODO** Tree Model: AST Based process methods
+- **TODO** Tree Model: AST based process methods
 
 # Usage
 ```python
@@ -31,7 +31,7 @@ embedder = Word2Vec(size=20, min_count=1, workers=12)
 processor = TextModel(embedder) 
 # create dataset and only use API Function Call data
 dataset = SySeVR('~/WorkSpace/Test/', processor, category=['AF'])
-# get train and valid datasets for pytorch
+# get train and valid datasets for 10 folds validation
 train, valid = dataset.torchset(10)
 # create dataloader for training
 train_loader = DataLoader(train, batch_size=50)
