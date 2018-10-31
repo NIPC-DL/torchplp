@@ -33,8 +33,5 @@ processor = TextModel(embedder)
 # create dataset and only use API Function Call data
 dataset = SySeVR('~/WorkSpace/Test/', processor, category=['AF'])
 # get train and valid datasets for 10 folds validation
-train, valid = dataset.torchset(10)
-# create dataloader for training
-train_loader = DataLoader(train, batch_size=50)
-valid_loader = DataLoader(valid, batch_size=50)
+torchset = dataset.torchset
 ```
