@@ -10,7 +10,7 @@ def readme():
 
 setup(
     name='covec',
-    version='0.1',
+    version='0.11',
     author="NIPC-DL",
     author_email="verf@protonmail.com",
     description="Python Code Processor for Machine Learning",

@@ -16,10 +16,10 @@ def packer_cc(root):
     """Transform clang ast to covec ast
 
     Args:
-        root <clang.cindex.Cursor>: root of clang ast
+        root (clang.cindex.Cursor): root of clang ast
     
     Return:
-        ast <covec.utils.ast.ASTNode>: covec ast
+        ast (covec.utils.ast.ASTNode): covec ast
     """
     ast = ASTNode()
     ast.id = root.hash
@@ -37,16 +37,16 @@ def packer_cc(root):
 
 
 def loader_cc(data):
-    """Load c/c++ file from path, return entry node
+    """Load c/c++ data (file or list of codes), return entry node
 
     This function load c/c++ source code file from path, the file can be
     incomplete but can't have too many errors.
 
     Args:
-        path <str>: path of the file
+        path (str): path of the file
     
     Return:
-        ast <covec.utils.ast.ASTNode>: Abstract Syntax Tree
+        ast (covec.utils.ast.ASTNode): Abstract Syntax Tree
     """
     if isinstance(data, list):
         with NamedTemporaryFile('w+t', suffix='.cpp') as f:
@@ -74,11 +74,11 @@ def loader_cgd(file_list):
         ...
 
     Args:
-        path <str>: path of the file
+        path (str): path of the file
     
     Return:
-        x_set <list>: code blocks
-        y_set <list>: labels
+        x_set (list): code blocks
+        y_set (list): labels
     """
     x_set = []
     y_set = []

@@ -23,7 +23,7 @@ def download_file(url, path, proxy):
                     'socks5://user:pass@host:port'
 
     """
-    path = os.path.expanduser(path)
+    # set proxy if exist
     if proxy:
         proxies = {
             'http': proxy,

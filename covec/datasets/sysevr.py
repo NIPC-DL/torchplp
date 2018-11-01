@@ -10,6 +10,7 @@ import os
 import re
 import zipfile
 import random
+import shutil
 import numpy as np
 from torch.utils.data import DataLoader
 from .utils import download_file, git_clone_file
@@ -26,78 +27,50 @@ class SySeVR(Dataset):
     From Paper:
         SySeVR: A Framework for Using Deep Learning to Detect Software
             Vulnerabilities <https://arxiv.org/abs/1807.06756>
-    
-    Directory Tree:
-        SySeVR
-            ├── Raw
-            │   ├── API function call.txt
-            │   ├── Arithmetic expression.txt
-            │   ├── Array usage.txt
-            │   ├── Pointer usage.txt
-            │   └── SySeVR.git
-            └── TextModel_vec.npz
-
 
     Args:
         datapath (str): Directory of dataset, will automately create SySeVR directory in it.
-        processor (covec.processor.Processor): The process methods
         category (None, list): The parts of Juliet Test Suite used on dataset
             - None, default: use all categoary
             - 'AE': Arithmetic Expression
             - 'AF': API Function Call
             - 'AU': Array Usage
             - 'PU': Pointer Usage
-        cache (bool, optional): Default is True to create cache file for vector data
         download (bool, optional): If true, download dataset from internet, default false.
 
     """
 
-    def __init__(self,
-                 datapath,
-                 processor,
-                 category=None,
-                 cache=True,
-                 download=True):
+    def __init__(self, datapath, category=None, download=True):
         super().__init__(datapath)
-        self._datapath = self._datapath + "SySeVR/"
-        self._vecpath = self._datapath + f'{processor}_vec.npz'
-        if not os.path.exists(self._datapath):
-            os.makedirs(self._datapath)
-        if download and not os.path.exists(self._datapath + 'Raw/'):
+        if download:
             self.download()
-        if os.path.exists(self._vecpath):
-            dataset = np.load(self._vecpath)
-            self.X, self.Y = dataset['arr_0'], dataset['arr_1']
-        else:
-            self.X, self.Y = self.process(processor, category=category)
-            if cache:
-                np.savez(self._vecpath, self.X, self.Y)
 
     def download(self):
         """Download SySeVR Datasets from their Github Repo"""
         url = DOWNLOAD_URL['sysevr']
-        raw_path = self._datapath + 'Raw/'
         print(f'git clone from {url}')
-        if not os.path.exists(raw_path):
-            os.makedirs(raw_path)
-        clone_path = raw_path + 'SySeVR.git/'
-        git_clone_file(url, clone_path)
-        print('clone success, Start extracting.')
-        # Extract download zip file
-        for file in os.listdir(clone_path):
-            if file.split('.')[-1] == 'zip':
-                with zipfile.ZipFile(os.path.join(clone_path, file)) as z:
-                    z.extractall(path=raw_path)
-        # arrange the raw directory for easy to use
-        for root, _, files in os.walk(raw_path):
-            for file in files:
-                if file.split('.')[-1] == 'txt':
-                    os.rename(
-                        os.path.join(root, file), os.path.join(raw_path, file))
-                    os.rmdir(root)
+        clone_path = self._rawpath / 'SySeVR.git'
+        if not clone_path.exists():
+            git_clone_file(str(url), str(clone_path))
+            print('clone success, Start extracting.')
+            # Extract download zip file
+            zip_files = list(self._rawpath.glob('**/*.zip'))
+            for file in zip_files:
+                with zipfile.ZipFile(str(file)) as z:
+                    z.extractall(path=str(self._rawpath))
+            # arrange the raw directory for easy to use
+            data_text_file = list(self._rawpath.glob('**/**/*.txt'))
+            for text in data_text_file:
+                shutil.move(str(text), str(self._rawpath))
+                shutil.rmtree(text.parent, ignore_errors=True)
+        else:
+            print('warn: directoy exist, download cancel')
 
-    def process(self, processor, category=None):
+    def process(self, processor, category=None, cache=True):
         """Process the selected data into vector by given processor and embedder
+
+        This method will update the self._X and self._Y variable point to processed
+        data, and if cache is True, it will save processed data in cooked directory.
         
         Args:
             processor (covec.processor.Processor): The process methods
@@ -111,20 +84,33 @@ class SySeVR(Dataset):
         """
         file_list = self._selected(category)
         x_set, y_set = loader_cgd(file_list)
-        print('cgd load finish')
         x_set = processor.process(x_set, 'cgd')
-        y_set = y_set
         assert len(x_set) == len(y_set)
-        return np.asarray(x_set), np.asarray(y_set)
+        self._X, self._Y = np.asarray(x_set), np.asarray(y_set)
+        if cache:
+            np.savez(
+                str(self._cookedpath / f'{str(processor).lower()}_vec.npz'),
+                self._X, self._Y)
 
-    @property
-    def torchset(self):
-        """Return the Pytorch Dataset Object"""
-        return TorchSet(self.X, self.Y)
+    def torchset(self, name=None):
+        """Return the Pytorch Dataset Object
+
+        Args:
+            name (str, None): The name of process methods, if not set,
+                will return the lastest processed data
+
+        """
+        if name:
+            dataset = np.load(
+                str(self._cookedpath / f'{name.lower()}_vec.npz'))
+            X, Y = dataset['arr_0'], dataset['arr_1']
+            tset = TorchSet(X, Y)
+        else:
+            tset = TorchSet(self._X, self._Y)
+        return tset
 
     def _selected(self, category):
         """Select file from category"""
-        sysevr_raw_path = self._datapath + 'Raw/'
         area = []
         if category:
             for i in category:
@@ -132,8 +118,7 @@ class SySeVR(Dataset):
         else:
             area = SYSEVR_CATEGORY.values()
         file_list = []
-        for root, _, files in os.walk(sysevr_raw_path):
-            for file in files:
-                if file in area:
-                    file_list.append(os.path.join(root, file))
+        for file in self._rawpath.glob('**/*.txt'):
+            if file.name in area:
+                file_list.append(str(file))
         return file_list

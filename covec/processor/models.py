@@ -17,11 +17,15 @@ class Processor(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def process(self):
+        """Process given data"""
         raise NotImplementedError
 
 
 class WordsModel(metaclass=abc.ABCMeta):
     """The upper class of words model"""
+
+    def __repr__(self):
+        return self.__class__.__name__
 
     @abc.abstractmethod
     def train(self, sents):

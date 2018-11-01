@@ -13,16 +13,20 @@ from covec.processor import TextModel, Word2Vec
 from multiprocessing import cpu_count
 from torch.utils.data import DataLoader
 
-test_path = os.path.expanduser('~/WorkSpace/Test/covec_test/')
+test_path = os.path.expanduser('~/WorkSpace/Test/covec/')
 
 
 def test_sysevr():
-    wm = Word2Vec(size=20, min_count=1, workers=12)
+    wm = Word2Vec(size=50, min_count=1, workers=12)
     pr = TextModel(wm)
-    dataset = SySeVR(test_path, pr, category=['AF'])
-    train, valid = dataset.torchset(5)
-    train_loader = DataLoader(train, batch_size=50)
-    print(train_loader)
+    dataset = SySeVR(test_path, category=['AF'])
+    dataset.process(pr, category=['AF'])
+    trochset = dataset.torchset()
+    print(type(trochset))
+
+
+def test_juliet():
+    dataset = Juliet(test_path)
 
 
 if __name__ == '__main__':
