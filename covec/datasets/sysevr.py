@@ -59,7 +59,7 @@ class SySeVR(Dataset):
         else:
             print('warn: directoy exist, download cancel')
 
-    def process(self, processor, category=None, cache=True):
+    def process(self, processor, category=None, cache=True, update=False):
         """Process the selected data into vector by given processor and embedder
 
         This method will update the self._X and self._Y variable point to processed
@@ -73,17 +73,22 @@ class SySeVR(Dataset):
                 - 'AF': API Function Call
                 - 'AU': Array Usage
                 - 'PU': Pointer Usage
+            update (bool, optional): If true, create vector dataset whether or not file
+                have already exist
             
         """
+        saved_path = self._cookedpath / f'{str(processor).lower()}_vec.npz'
         file_list = self._selected(category)
         x_set, y_set = loader_cgd(file_list)
-        x_set = processor.process(x_set, 'cgd')
-        assert len(x_set) == len(y_set)
-        self._X, self._Y = np.asarray(x_set), np.asarray(y_set)
+        if update or not saved_path.exists():
+            x_set = processor.process(x_set, 'cgd')
+            assert len(x_set) == len(y_set)
+            self._X, self._Y = np.asarray(x_set), np.asarray(y_set)
+        else:
+            dataset = np.load(str(saved_path))
+            self._X, self._Y = dataset['arr_0'], dataset['arr_1']
         if cache:
-            np.savez(
-                str(self._cookedpath / f'{str(processor).lower()}_vec.npz'),
-                self._X, self._Y)
+            np.savez(str(saved_path), self._X, self._Y)
 
     def torchset(self, name=None):
         """Return the Pytorch Dataset Object
