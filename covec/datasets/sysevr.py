@@ -46,7 +46,6 @@ class SySeVR(Dataset):
         clone_path = self._rawpath / 'SySeVR.git'
         if not clone_path.exists():
             git_clone_file(str(url), str(clone_path))
-            print('clone success, Start extracting.')
             # Extract download zip file
             zip_files = list(self._rawpath.glob('**/*.zip'))
             for file in zip_files:
