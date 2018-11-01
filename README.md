@@ -27,11 +27,13 @@ from covec.processor import TextModel, Word2Vec
 from torch.utils.data import DataLoader
 
 # create a words embedding model for processor
-embedder = Word2Vec(size=20, min_count=1, workers=12) 
+embedder = Word2Vec(size=50, min_count=1, workers=12) 
 # create a processor object to transform data in vector representation
 processor = TextModel(embedder) 
-# create dataset and only use API Function Call data
-dataset = SySeVR('~/WorkSpace/Test/', processor, category=['AF'])
-# get train and valid datasets for 10 folds validation
-torchset = dataset.torchset
+# create dataset
+dataset = SySeVR('~/WorkSpace/Test/')
+# use processor to process dataset
+dataset.process(processor, category=['AF', ])
+# get pytorch dataset object
+torchset = dataset.torchset()
 ```

@@ -30,17 +30,11 @@ class SySeVR(Dataset):
 
     Args:
         datapath (str): Directory of dataset, will automately create SySeVR directory in it.
-        category (None, list): The parts of Juliet Test Suite used on dataset
-            - None, default: use all categoary
-            - 'AE': Arithmetic Expression
-            - 'AF': API Function Call
-            - 'AU': Array Usage
-            - 'PU': Pointer Usage
         download (bool, optional): If true, download dataset from internet, default false.
 
     """
 
-    def __init__(self, datapath, category=None, download=True):
+    def __init__(self, datapath, download=True):
         super().__init__(datapath)
         if download:
             self.download()
