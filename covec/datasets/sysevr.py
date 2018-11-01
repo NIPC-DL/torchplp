@@ -11,6 +11,7 @@ import re
 import zipfile
 import random
 import numpy as np
+from torch.utils.data import DataLoader
 from .utils import download_file, git_clone_file
 from .constants import DOWNLOAD_URL, JULIET_CATEGORY, SYSEVR_CATEGORY
 from .models import Dataset
@@ -116,28 +117,10 @@ class SySeVR(Dataset):
         assert len(x_set) == len(y_set)
         return np.asarray(x_set), np.asarray(y_set)
 
-    def torchset(self, validation=None):
-        """Return the Pytorch Dataset Object
-        
-        Args:
-            validation (None, int): If set a int, will return the train dataset 
-                and valid dataset in folds.
-
-        """
-
-        if validation:
-            total_size = self.X.shape[0]
-            fold = round(total_size / validation)
-            seed = random.randint(0, 100)
-            random.seed(seed)
-            random.shuffle(self.X)
-            random.seed(seed)
-            random.shuffle(self.Y)
-            train = TorchSet(self.X[:-fold], self.Y[:-fold])
-            vaild = TorchSet(self.X[-fold:], self.Y[-fold:])
-            return (train, vaild)
-        else:
-            return TorchSet(self.X, self.Y)
+    @property
+    def torchset(self):
+        """Return the Pytorch Dataset Object"""
+        return TorchSet(self.X, self.Y)
 
     def _selected(self, category):
         """Select file from category"""
