@@ -17,7 +17,7 @@ def download_file(url, path, proxy):
 
     Args:
         url (str): download url
-        path (str): saved path
+        path (pathlib.Path): saved path
         proxy (str): proxy used for download.
                 eg. 'http://user:pass@host:port/'
                     'socks5://user:pass@host:port'
@@ -35,7 +35,7 @@ def download_file(url, path, proxy):
     total_size = int(r.headers["Content-Length"])
     chunk_size = 1024
     bar_num = int(total_size / chunk_size)
-    with open(path + url.split('/')[-1], 'wb') as f:
+    with open(str(path / url.split('/')[-1]), 'wb') as f:
         for chunk in tqdm(
                 iterable=r.iter_content(chunk_size=chunk_size),
                 total=bar_num,

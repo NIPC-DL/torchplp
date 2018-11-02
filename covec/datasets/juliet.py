@@ -10,6 +10,7 @@ import os
 import re
 import zipfile
 import pathlib
+import shutil
 from .utils import download_file
 from .constants import DOWNLOAD_URL, JULIET_CATEGORY
 from .models import Dataset
@@ -27,7 +28,7 @@ class Juliet(Dataset):
 
     """
 
-    def __init__(self, datapath, processor, download=False, proxy=None):
+    def __init__(self, datapath, download=True, proxy=None):
         super().__init__(datapath)
         if download:
             self.download(proxy)
@@ -43,16 +44,19 @@ class Juliet(Dataset):
         """
         url = DOWNLOAD_URL['juliet']
         print(f'Download from {url}')
-        download_file(url, str(self._rawpath), proxy)
-        print('Download success, Start extracting.')
-        # Extract download zip file
-        zip_file = next(self._rawpath.glob('**/*.zip'))
-        with zipfile.ZipFile(str(zip_file)) as z:
-            z.extractall(str(self._rawpath))
-        # arrange the raw directory for easy to use
-        testcase_path = self._rawpath / 'C/testcases'
+        if not os.path.exists(str(self._rawpath / 'testcases')):
+            download_file(url, self._rawpath, proxy)
+            print('Download success, Start extracting.')
+            # Extract download zip file
+            zip_file = next(self._rawpath.glob('**/*.zip'))
+            with zipfile.ZipFile(str(zip_file)) as z:
+                z.extractall(str(self._rawpath))
+        else:
+            print(
+                f"warn: {str(self._rawpath) + 'testcases/'}directory exist, download cancel"
+            )
 
-    def process(self, processor, embedder, category=None):
+    def process(self, processor, category=None):
         """Process the selected data into vector by given processor and embedder
         
         Args:
@@ -67,3 +71,7 @@ class Juliet(Dataset):
         TODO:
         """
         pass
+
+    def _mark(self):
+        marked_path = self._rawpath / 'marked'
+        marked_path.mkdir(parents=True, exist_ok=True)\

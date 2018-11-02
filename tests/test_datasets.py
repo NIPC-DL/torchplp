@@ -26,8 +26,8 @@ def test_sysevr():
 
 
 def test_juliet():
-    dataset = Juliet(test_path)
+    dataset = Juliet(test_path, proxy='socks5://127.0.0.1:1080')
 
 
 if __name__ == '__main__':
-    test_sysevr()
+    test_juliet()
