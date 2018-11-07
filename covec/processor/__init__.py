@@ -9,10 +9,12 @@ This subpackage is the collection of all process for datasets
 from .textmodel import TextModel
 from .embedding import Word2Vec
 from .models import Processor, WordsModel
+from .parser import Parser
 
 __all__ = [
     'TextModel',
     'Word2Vec',
     'Processor',
     'WordsModel',
+    'Parser',
 ]

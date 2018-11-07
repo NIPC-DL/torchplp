@@ -14,6 +14,8 @@ import shutil
 from .utils import download_file
 from .constants import DOWNLOAD_URL, JULIET_CATEGORY
 from .models import Dataset
+from covec.utils.loader import loader_cc
+from covec.processor import Parser
 
 
 class Juliet(Dataset):
@@ -30,6 +32,7 @@ class Juliet(Dataset):
 
     def __init__(self, datapath, download=True, proxy=None):
         super().__init__(datapath)
+        self._casepath = self._rawpath / 'C' / 'testcases'
         if download:
             self.download(proxy)
 
@@ -44,7 +47,7 @@ class Juliet(Dataset):
         """
         url = DOWNLOAD_URL['juliet']
         print(f'Download from {url}')
-        if not os.path.exists(str(self._rawpath / 'testcases')):
+        if not self._casepath.exists():
             download_file(url, self._rawpath, proxy)
             print('Download success, Start extracting.')
             # Extract download zip file
@@ -72,6 +75,25 @@ class Juliet(Dataset):
         """
         pass
 
-    def _mark(self):
-        marked_path = self._rawpath / 'marked'
-        marked_path.mkdir(parents=True, exist_ok=True)\
+    def mark(self):
+        selected = []
+        fdecl = []
+        num = 0
+        for i in self._casepath.iterdir():
+            if i.name.split('_')[0] in JULIET_CATEGORY['AF']:
+                selected.append(i)
+        for i in selected:
+            flag = 0
+            for file in i.glob('**/CWE*.[c,cpp]'):
+                ast = loader_cc(str(file))
+                pr = Parser(ast)
+                decl = pr.walker(
+                    lambda x: x.is_definition and x.kind == 'FUNCTION_DECL')
+                flag += len(decl)
+                fdecl.extend(decl)
+                if flag >= 100:
+                    break
+            break
+        for i in fdecl[:5]:
+            pr = Parser(i)
+            pr.graph('/home/verf/WorkSpace/Test/')

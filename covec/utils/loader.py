@@ -28,7 +28,7 @@ def packer_cc(root):
     else:
         ast.data = root.displayname
     ast.kind = ASTKind(root.kind, 'cc')
-    ast.raw = root
+    ast.is_definition = root.is_definition()
     for c in root.get_children():
         child = packer_cc(c)
         child.parent = ast
@@ -48,14 +48,13 @@ def loader_cc(data):
     Return:
         ast (covec.utils.ast.ASTNode): Abstract Syntax Tree
     """
+    index = cc.Index.create()
     if isinstance(data, list):
-        with NamedTemporaryFile('w+t', suffix='.cpp') as f:
-            f.write('\n'.join(data))
-            f.seek(0)
-            index = cc.Index.create()
-            tu = index.parse(f.name)
+        with NamedTemporaryFile('w+t', suffix='.cpp') as tf:
+            tf.write('\n'.join(data))
+            tf.seek(0)
+            tu = index.parse(tf.name)
     else:
-        index = cc.Index.create()
         tu = index.parse(data)
     return packer_cc(tu.cursor)
 

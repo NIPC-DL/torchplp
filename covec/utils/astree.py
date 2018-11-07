@@ -45,6 +45,7 @@ class ASTNode:
         self._data = None
         self._kind = None
         self._raw = None
+        self._is_definition = None
 
     def __repr__(self):
         return f'<covec.utils.ast.ASTNode>\n{self.id}\n{self.data}\n{self.kind}'
@@ -121,3 +122,11 @@ class ASTNode:
     def raw(self, value):
         """set raw data of node"""
         self._raw = value
+
+    @property
+    def is_definition(self):
+        return self._is_definition
+
+    @is_definition.setter
+    def is_definition(self, value):
+        self._is_definition = value

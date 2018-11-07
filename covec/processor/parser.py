@@ -6,6 +6,7 @@ parser.py - The data parser for covec
 :Email: verf@protonmail.com
 :License: MIT
 """
+from graphviz import Digraph
 from collections import deque
 from covec.utils.astree import ASTNode
 
@@ -44,3 +45,16 @@ class Parser:
             if selector(node):
                 selected.append(node)
         return selected
+
+    def graph(self, path):
+        dot = Digraph(comment='Abstract Syntax Tree')
+        queue = deque()
+        queue.append(self._root)
+        while queue:
+            node = queue.popleft()
+            dot.node(str(node.id), f'{node.data}\n{node.kind}')
+            for child in node.children:
+                queue.append(child)
+                dot.node(str(child.id), f'{child.data}\n{child.kind}')
+                dot.edge(str(node.id), str(child.id))
+        dot.render(path + f'{self._root.data}_ast.gv', view=True)
