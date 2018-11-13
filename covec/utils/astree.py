@@ -44,7 +44,7 @@ class ASTNode:
         self._id = None
         self._data = None
         self._kind = None
-        self._raw = None
+        self._vector = None
         self._is_definition = None
 
     def __repr__(self):
@@ -110,18 +110,13 @@ class ASTNode:
         self._kind = value
 
     @property
-    def raw(self):
-        """
-        Return raw class of Node,
-        raw class is a raw data created by each language parser,
-        for c/c++, raw means clang.cindex.Cursor.
-        """
-        return self._raw
+    def vector(self):
+        """Return vector value of Node"""
+        return self._vector
 
-    @raw.setter
-    def raw(self, value):
-        """set raw data of node"""
-        self._raw = value
+    @vector.setter
+    def vector(self, value):
+        self._vector = value
 
     @property
     def is_definition(self):
