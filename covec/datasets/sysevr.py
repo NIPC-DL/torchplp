@@ -73,12 +73,13 @@ class SySeVR(Dataset):
                 - 'AF': API Function Call
                 - 'AU': Array Usage
                 - 'PU': Pointer Usage
+            cache (bool, optional): If True, save the processed data in disk
             update (bool, optional): If true, create vector dataset whether or not file
                 have already exist
             
         """
         saved_path = self._cookedpath / f'{str(processor).lower()}_vec.npz'
-        file_list = self._selected(category)
+        file_list = self.selector(category)
         x_set, y_set = loader_cgd(file_list)
         if update or not saved_path.exists():
             x_set = processor.process(x_set, 'cgd')
@@ -102,12 +103,12 @@ class SySeVR(Dataset):
             dataset = np.load(
                 str(self._cookedpath / f'{name.lower()}_vec.npz'))
             X, Y = dataset['arr_0'], dataset['arr_1']
-            tset = TorchSet(X, Y)
+            tset = TorchSet(X, Y, 'array')
         else:
-            tset = TorchSet(self._X, self._Y)
+            tset = TorchSet(self._X, self._Y, 'array')
         return tset
 
-    def _selected(self, category):
+    def selector(self, category):
         """Select file from category"""
         area = []
         if category:

@@ -11,18 +11,14 @@ from torch.utils import data
 
 
 class TorchSet(data.Dataset):
-    """
-    This is the pytorch dataset class that can input to create dataloader
+    """The Pytorch Dataset"""
 
-    Args:
-        X (numpy.adarray): The sample dataset
-        Y (numpy.adarray): The label data
-
-    """
-
-    def __init__(self, X, Y):
-        self.X = torch.tensor(X).float()
-        self.Y = torch.tensor(Y).long()
+    def __init__(self, X, Y, type_):
+        if type_ == 'array':
+            self.X = torch.tensor(X).float()
+        elif type_ == 'tree':
+            self.X = X
+        self.Y = torch.tensor(Y)
 
     def __getitem__(self, index):
         return self.X[index], self.Y[index]

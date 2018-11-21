@@ -9,7 +9,7 @@ test_juliet.py - test juliet class
 """
 import os
 from covec.datasets import Juliet, SySeVR
-from covec.processor import TextModel, Word2Vec
+from covec.processor import TextModel, TreeModel, Word2Vec
 from multiprocessing import cpu_count
 from torch.utils.data import DataLoader
 
@@ -28,7 +28,11 @@ def test_sysevr():
 def test_juliet():
     dataset = Juliet(
         test_path, download=False, proxy='socks5://127.0.0.1:1080')
-    dataset.mark()
+    wm = Word2Vec(size=50, min_count=1, workers=12)
+    pr = TreeModel(wm, 100)
+    dataset.process(pr, ['AF'])
+    trochset = dataset.torchset()
+    print(type(trochset))
 
 
 if __name__ == '__main__':

@@ -53,3 +53,7 @@ class Word2Vec(WordsModel):
 
         """
         self._model.save(path)
+
+    @property
+    def model(self):
+        return self._model

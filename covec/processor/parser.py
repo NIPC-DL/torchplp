@@ -46,6 +46,15 @@ class Parser:
                 selected.append(node)
         return selected
 
+    def walk(self):
+        queue = deque()
+        queue.append(self._root)
+        while queue:
+            node = queue.popleft()
+            for child in node.children:
+                queue.append(child)
+            yield node
+
     def graph(self, path):
         dot = Digraph(comment='Abstract Syntax Tree')
         queue = deque()

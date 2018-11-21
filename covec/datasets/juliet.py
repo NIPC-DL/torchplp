@@ -11,9 +11,13 @@ import re
 import zipfile
 import pathlib
 import shutil
+import pickle
+import numpy as np
+from itertools import chain
 from .utils import download_file
 from .constants import DOWNLOAD_URL, JULIET_CATEGORY
 from .models import Dataset
+from .torchset import TorchSet
 from covec.utils.loader import loader_cc
 from covec.processor import Parser
 
@@ -59,7 +63,7 @@ class Juliet(Dataset):
                 f"warn: {str(self._rawpath) + 'testcases/'}directory exist, download cancel"
             )
 
-    def process(self, processor, category=None):
+    def process(self, processor, category=None, cache=True, update=False):
         """Process the selected data into vector by given processor and embedder
         
         Args:
@@ -71,29 +75,73 @@ class Juliet(Dataset):
                 - 'AF': API Function Call
                 - 'AU': Array Usage
                 - 'PU': Pointer Usage
-        TODO:
-        """
-        pass
+            cache (bool, optional): If True, save the processed data in disk
+            update (bool, optional): If true, create vector dataset whether or not file
+                have already exist
 
-    def mark(self):
-        selected = []
-        fdecl = []
-        num = 0
-        for i in self._casepath.iterdir():
-            if i.name.split('_')[0] in JULIET_CATEGORY['AF']:
-                selected.append(i)
-        for i in selected:
-            flag = 0
-            for file in i.glob('**/CWE*.[c,cpp]'):
+        """
+        saved_path = self._cookedpath / f'{str(processor).lower()}_vec.p'
+        if update or not saved_path.exists():
+            marked, labels = self.marker(category)
+            vrl = processor.process(marked)
+            print(f'found {saved_path.name}, load cache.')
+        else:
+            vrl, labels = pickle.load(open(str(saved_path), 'rb'))
+        self._X = vrl
+        self._Y = labels
+        if cache:
+            pickle.dump((vrl, labels),
+                        open(str(saved_path), 'wb'),
+                        protocol=pickle.HIGHEST_PROTOCOL)
+
+    def torchset(self, name=None):
+        """Return the Pytorch Dataset Object
+
+        Args:
+            name (str, None): The name of process methods, if not set,
+                will return the lastest processed data
+
+        """
+        if name:
+            vrl, labels = pickle.load(
+                str(self._cookedpath / f'{name.lower()}_vec.p'))
+            X = vrl
+            Y = labels
+            tset = TorchSet(X, Y, 'tree')
+        else:
+            tset = TorchSet(self._X, self._Y, 'tree')
+        return tset
+
+    def _selector(self, category):
+        if not category:
+            category = ['AE', 'AF', 'AU', 'PU']
+        category = list(chain(*[JULIET_CATEGORY[x] for x in category]))
+        selected = [
+            x for x in self._casepath.iterdir()
+            if x.name.split('_')[0] in category
+        ]
+        return set(selected)
+
+    def marker(self, category=None):
+        files = self._selector(category)
+        marked = []
+        labels = []
+        for ind, file in enumerate(files):
+            for file in file.glob('**/CWE*.[c,cpp]'):
+                marked_decl = []
                 ast = loader_cc(str(file))
                 pr = Parser(ast)
                 decl = pr.walker(
                     lambda x: x.is_definition and x.kind == 'FUNCTION_DECL')
-                flag += len(decl)
-                fdecl.extend(decl)
-                if flag >= 100:
-                    break
-            break
-        for i in fdecl[:5]:
-            pr = Parser(i)
-            pr.graph('/home/verf/WorkSpace/Test/')
+                for node in decl:
+                    if 'main' in str(node.data):
+                        break
+                    node.source = file.name
+                    if 'bad' in str(node.data):
+                        labels.append(np.array([1.0, 0.0]))
+                    else:
+                        labels.append(np.array([0.0, 1.0]))
+                    marked_decl.append(node)
+                marked.extend(marked_decl)
+            if ind > 5:
+                return marked, labels

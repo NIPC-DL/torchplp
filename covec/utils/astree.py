@@ -44,7 +44,8 @@ class ASTNode:
         self._id = None
         self._data = None
         self._kind = None
-        self._vector = None
+        self._source = None
+        self._label = None
         self._is_definition = None
 
     def __repr__(self):
@@ -110,13 +111,20 @@ class ASTNode:
         self._kind = value
 
     @property
-    def vector(self):
-        """Return vector value of Node"""
-        return self._vector
+    def source(self):
+        return self._source
 
-    @vector.setter
-    def vector(self, value):
-        self._vector = value
+    @source.setter
+    def source(self, value):
+        self._source = value
+
+    @property
+    def label(self):
+        return self._label
+
+    @label.setter
+    def label(self, value):
+        self._label = value
 
     @property
     def is_definition(self):
