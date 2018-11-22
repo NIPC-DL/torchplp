@@ -8,23 +8,24 @@ models.py - The covec dataset model defination
 """
 import os
 import pathlib
+from torch.utils import data
 
 
-class Dataset:
+class Dataset(data.Dataset):
     """Upper dataset class"""
 
-    def __init__(self, datapath):
+    def __init__(self, root):
         # expand given path
-        self._datapath = pathlib.Path(datapath).expanduser()
+        self._rootp = pathlib.Path(root).expanduser()
         # create unique directory in datapath to save datasets
-        self._datapath = self._datapath / str(self)
-        self._datapath.mkdir(parents=True, exist_ok=True)
+        self._rootp = self._rootp / str(self)
+        self._rootp.mkdir(parents=True, exist_ok=True)
         # create raw path to save raw datasets
-        self._rawpath = self._datapath / 'raw'
-        self._rawpath.mkdir(parents=True, exist_ok=True)
+        self._rawp = self._rootp / 'raw'
+        self._rawp.mkdir(parents=True, exist_ok=True)
         # create cooked path to save processed datasets (vector data)
-        self._cookedpath = self._datapath / 'cooked'
-        self._cookedpath.mkdir(parents=True, exist_ok=True)
+        self._cookp = self._rootp / 'cook'
+        self._cookp.mkdir(parents=True, exist_ok=True)
 
     def __repr__(self):
         return self.__class__.__name__

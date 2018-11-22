@@ -43,18 +43,18 @@ class SySeVR(Dataset):
         """Download SySeVR Datasets from their Github Repo"""
         url = DOWNLOAD_URL['sysevr']
         print(f'git clone from {url}')
-        clone_path = self._rawpath / 'SySeVR.git'
+        clone_path = self._rawp / 'SySeVR.git'
         if not clone_path.exists():
             git_clone_file(str(url), str(clone_path))
             # Extract download zip file
-            zip_files = list(self._rawpath.glob('**/*.zip'))
+            zip_files = list(self._rawp.glob('**/*.zip'))
             for file in zip_files:
                 with zipfile.ZipFile(str(file)) as z:
-                    z.extractall(path=str(self._rawpath))
+                    z.extractall(path=str(self._rawp))
             # arrange the raw directory for easy to use
-            data_text_file = list(self._rawpath.glob('**/**/*.txt'))
+            data_text_file = list(self._rawp.glob('**/**/*.txt'))
             for text in data_text_file:
-                shutil.move(str(text), str(self._rawpath))
+                shutil.move(str(text), str(self._rawp))
                 shutil.rmtree(text.parent, ignore_errors=True)
         else:
             print('warn: directoy exist, download cancel')
@@ -78,7 +78,7 @@ class SySeVR(Dataset):
                 have already exist
             
         """
-        saved_path = self._cookedpath / f'{str(processor).lower()}_vec.npz'
+        saved_path = self._cookp / f'{str(processor).lower()}_vec.npz'
         file_list = self.selector(category)
         x_set, y_set = loader_cgd(file_list)
         if update or not saved_path.exists():
@@ -100,8 +100,7 @@ class SySeVR(Dataset):
 
         """
         if name:
-            dataset = np.load(
-                str(self._cookedpath / f'{name.lower()}_vec.npz'))
+            dataset = np.load(str(self._cookp / f'{name.lower()}_vec.npz'))
             X, Y = dataset['arr_0'], dataset['arr_1']
             tset = TorchSet(X, Y, 'array')
         else:
@@ -117,7 +116,7 @@ class SySeVR(Dataset):
         else:
             area = SYSEVR_CATEGORY.values()
         file_list = []
-        for file in self._rawpath.glob('**/*.txt'):
+        for file in self._rawp.glob('**/*.txt'):
             if file.name in area:
                 file_list.append(str(file))
         return file_list

@@ -8,6 +8,7 @@ treemod.py - The Tree Model Processor
 """
 import re
 import pickle
+import torch
 import numpy as np
 from hashlib import sha256
 from struct import unpack
@@ -73,7 +74,6 @@ class TreeModel(Processor):
             int(self._length / 2))
         vst.append(np.concatenate((data_vec, kind_vec)))
         vst.append([])
-        vst.append(None)
         for c in root.children:
             child = self.vectorlize(c)
             vst[1].append(child)
@@ -86,9 +86,6 @@ class TreeModel(Processor):
             data (list): The list of AST Node
             pretrain (bool, optional): If embedder is pretrained, don't train it
                 by current dataset
-        
-        Return:
-            vrl (list): The list of VST Node
 
         """
 
@@ -96,7 +93,7 @@ class TreeModel(Processor):
         if not pretrain:
             self._pretrain(data)
         vrl = [self.vectorlize(x) for x in srl]
-        return vrl
+        return torch.Tensor(vrl)
 
     def _pretrain(self, data):
         """Training the embedder by given data
