@@ -40,12 +40,5 @@ def test_juliet():
 
 
 if __name__ == '__main__':
-    # test_juliet()
+    test_juliet()
     # test_sysevr()
-    from covec.utils.loader import loader_cc
-    root = loader_cc(sys.argv[1])
-    pr = Parser(root)
-    func = pr.walker(lambda x: x.kind == 'FUNCTION_DECL')
-    for i in func:
-        pr = Parser(i)
-        pr.graph('/home/verf/WorkSpace/Test/graph/')

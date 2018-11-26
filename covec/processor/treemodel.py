@@ -14,6 +14,7 @@ from hashlib import sha256
 from struct import unpack
 from .models import Processor
 from .parser import Parser
+from covec.utils.vstree import VSTNode
 
 
 class TreeModel(Processor):
@@ -67,16 +68,15 @@ class TreeModel(Processor):
             length (int): The length of vector for AST Node
 
         """
-        vst = []
+        vst = VSTNode()
         data_vec = self._embedder[root.data] if root.data else np.zeros(
             int(self._length / 2))
         kind_vec = self._embedder[root.kind] if root.kind else np.zeros(
             int(self._length / 2))
-        vst.append(np.concatenate((data_vec, kind_vec)))
-        vst.append([])
+        vst.vector = np.concatenate(data_vec, kind_vec)
         for c in root.children:
             child = self.vectorlize(c)
-            vst[1].append(child)
+            vst.addChild(child)
         return vst
 
     def process(self, data, pretrain=False):
@@ -93,7 +93,7 @@ class TreeModel(Processor):
         if not pretrain:
             self._pretrain(data)
         vrl = [self.vectorlize(x) for x in srl]
-        return torch.Tensor(vrl)
+        return vrl
 
     def _pretrain(self, data):
         """Training the embedder by given data

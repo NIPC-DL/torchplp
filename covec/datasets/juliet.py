@@ -96,20 +96,21 @@ class Juliet(Dataset):
                 have already exist
 
         """
-        Xp = self._cookp / f'{str(processor)}_X.pt'
+        Xp = self._cookp / f'{str(processor)}_X.p'
         Yp = self._cookp / f'{str(processor)}_Y.pt'
         if Xp.exists() and Yp.exists():
             print('Cache found, load from cache.')
-            self._X = torch.load(str(Xp))
+            self._X = pickle.load(open(str(Xp)))
             self._Y = torch.load(str(Yp))
         else:
             marked, labels = self._marker(category)
-            marked = processor.process(marked)
+            vrl = processor.process(vrl)
             print('Cooked success.')
-            torch.save(marked, str(Xp))
+            pickle.dump(
+                marked, open(str(Xp)), protocol=pickle.HIGHEST_PROTOCOL)
             torch.save(labels, str(Yp))
             print('Cache saved success.')
-            self._X = marked
+            self._X = vrl
             self._Y = labels
 
     def _selector(self, category):
