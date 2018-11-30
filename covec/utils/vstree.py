@@ -14,9 +14,6 @@ class VSTNode:
         self._children = []
         self._vector = None
 
-    def addChild(self, child):
-        self._children.append(child)
-
     @property
     def parent(self):
         return self._parent
@@ -24,6 +21,14 @@ class VSTNode:
     @parent.setter
     def parent(self, value):
         self._parent = value
+
+    @property
+    def children(self):
+        return self._children
+
+    @children.setter
+    def children(self, value):
+        self._children = value
 
     @property
     def vector(self):

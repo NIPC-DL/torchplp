@@ -73,10 +73,13 @@ class TreeModel(Processor):
             int(self._length / 2))
         kind_vec = self._embedder[root.kind] if root.kind else np.zeros(
             int(self._length / 2))
-        vst.vector = np.concatenate(data_vec, kind_vec)
+        data_vec = torch.from_numpy(data_vec).float()
+        kind_vec = torch.from_numpy(kind_vec).float()
+        vst.vector = torch.cat((data_vec, kind_vec), 0)
         for c in root.children:
             child = self.vectorlize(c)
-            vst.addChild(child)
+            vst.children.append(child)
+            child.parent = vst
         return vst
 
     def process(self, data, pretrain=False):

@@ -14,6 +14,7 @@ import shutil
 import pickle
 import torch
 import numpy as np
+from collections import deque
 from itertools import chain
 from .models import Dataset
 from .utils import download_file
@@ -21,6 +22,18 @@ from .constants import DOWNLOAD_URL, JULIET_CATEGORY
 from .torchset import TorchSet
 from covec.utils.loader import loader_cc
 from covec.processor import Parser
+
+dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+
+def walk(root):
+    queue = deque()
+    queue.append(root)
+    while queue:
+        node = queue.popleft()
+        for child in node.children:
+            queue.append(child)
+        yield node
 
 
 class Juliet(Dataset):
@@ -51,7 +64,10 @@ class Juliet(Dataset):
             self.process(processor, category)
 
     def __getitem__(self, index):
-        return self._X[index], self._Y[index]
+        X = self._X[index]
+        for i in walk(X):
+            i.vector.to('cpu')
+        return X, self._Y[index]
 
     def __len__(self):
         return len(self._Y)
@@ -100,14 +116,14 @@ class Juliet(Dataset):
         Yp = self._cookp / f'{str(processor)}_Y.pt'
         if Xp.exists() and Yp.exists():
             print('Cache found, load from cache.')
-            self._X = pickle.load(open(str(Xp)))
+            self._X = pickle.load(open(str(Xp), 'rb'))
             self._Y = torch.load(str(Yp))
         else:
             marked, labels = self._marker(category)
-            vrl = processor.process(vrl)
+            vrl = processor.process(marked)
             print('Cooked success.')
             pickle.dump(
-                marked, open(str(Xp)), protocol=pickle.HIGHEST_PROTOCOL)
+                vrl, open(str(Xp), 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
             torch.save(labels, str(Yp))
             print('Cache saved success.')
             self._X = vrl
@@ -116,7 +132,7 @@ class Juliet(Dataset):
     def _selector(self, category):
         if not category:
             category = ['AE', 'AF', 'AU', 'PU']
-        category = list(chain(*[JULIET_CATEGORY[x] for x in category]))
+        category = set(list(chain(*[JULIET_CATEGORY[x] for x in category])))
         selected = [
             x for x in self._casep.iterdir()
             if x.name.split('_')[0] in category
@@ -141,5 +157,4 @@ class Juliet(Dataset):
                                   str(node.data) else [0.0, 1.0])
                     fdecl.append(node)
                 marked.extend(fdecl)
-            if ind > 5:
-                return marked, torch.Tensor(labels)
+        return marked, torch.Tensor(labels)
