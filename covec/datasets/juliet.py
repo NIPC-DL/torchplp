@@ -65,8 +65,8 @@ class Juliet(Dataset):
 
     def __getitem__(self, index):
         X = self._X[index]
-        for i in walk(X):
-            i.vector.to('cpu')
+        # for i in walk(X):
+        #     i.vector.to(dev)
         return X, self._Y[index]
 
     def __len__(self):

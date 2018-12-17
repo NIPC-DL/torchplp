@@ -14,6 +14,15 @@ class VSTNode:
         self._children = []
         self._vector = None
 
+    def to(self, dev):
+        self._vector = self._vector.to(dev)
+        for child in self._children:
+            child.to(dev)
+        return self
+
+    def _to(self, dev):
+        self._vector = self._vector.to(dev)
+
     @property
     def parent(self):
         return self._parent
