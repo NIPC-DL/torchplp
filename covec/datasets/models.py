@@ -11,7 +11,7 @@ import pathlib
 from torch.utils import data
 
 
-class Dataset(data.Dataset):
+class Dataset(object):
     """Upper dataset class"""
 
     def __init__(self, root):

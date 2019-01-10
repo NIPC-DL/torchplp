@@ -13,15 +13,12 @@ from torch.utils import data
 class TorchSet(data.Dataset):
     """The Pytorch Dataset"""
 
-    def __init__(self, X, Y, type_):
-        if type_ == 'array':
-            self.X = torch.tensor(X).float()
-        elif type_ == 'tree':
-            self.X = X
-        self.Y = torch.tensor(Y)
+    def __init__(self, X, Y):
+        self._X = X
+        self._Y = Y
 
     def __getitem__(self, index):
-        return self.X[index], self.Y[index]
+        return self._X[index], self._Y[index]
 
     def __len__(self):
-        return len(self.X)
+        return len(self._Y)

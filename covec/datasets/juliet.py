@@ -12,6 +12,7 @@ import zipfile
 import pathlib
 import shutil
 import pickle
+import random
 import torch
 import numpy as np
 from collections import deque
@@ -22,18 +23,6 @@ from .constants import DOWNLOAD_URL, JULIET_CATEGORY
 from .torchset import TorchSet
 from covec.utils.loader import loader_cc
 from covec.processor import Parser
-
-dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-
-def walk(root):
-    queue = deque()
-    queue.append(root)
-    while queue:
-        node = queue.popleft()
-        for child in node.children:
-            queue.append(child)
-        yield node
 
 
 class Juliet(Dataset):
@@ -48,12 +37,7 @@ class Juliet(Dataset):
 
     """
 
-    def __init__(self,
-                 root,
-                 processor=None,
-                 download=True,
-                 proxy=None,
-                 category=None):
+    def __init__(self, root, processor=None, download=True, proxy=None):
         super(Juliet, self).__init__(root)
         self._casep = self._rawp / 'C' / 'testcases'
         # download dataset from internet
@@ -61,16 +45,7 @@ class Juliet(Dataset):
             self.download(proxy)
         # process raw dataset by given processor
         if processor:
-            self.process(processor, category)
-
-    def __getitem__(self, index):
-        X = self._X[index]
-        # for i in walk(X):
-        #     i.vector.to(dev)
-        return X, self._Y[index]
-
-    def __len__(self):
-        return len(self._Y)
+            self.process(processor)
 
     def download(self, proxy):
         """Download Juliet Test Suiet from NIST website
@@ -85,76 +60,71 @@ class Juliet(Dataset):
         print(f'Download from {url}')
         if not self._casep.exists():
             download_file(url, self._rawp, proxy)
-            print('Download success, start extracting.')
+            print('Download success, start extracting')
             # Extract download zip file
             zip_file = next(self._rawp.glob('**/*.zip'))
             with zipfile.ZipFile(str(zip_file)) as z:
                 z.extractall(str(self._rawp))
+            print('Extracting success')
         else:
             print(
-                f"Path {str(self._rawp) + 'testcases/'} exist, download cancel."
+                f"Path {str(self._rawp / 'testcases')} exist, download cancel."
             )
 
-    def process(self, processor, category):
-        """Process the selected data into vector by given processor and embedder
-        
-        Args:
-            processor (covec.processor.Processor): The process methods
-            embedder (covec.processor.WordsModel): The words embedding methods
-            category (None, list): The parts of Juliet Test Suite used on dataset
-                - None, default: use all categoary
-                - 'AE': Arithmetic Expression
-                - 'AF': API Function Call
-                - 'AU': Array Usage
-                - 'PU': Pointer Usage
-            cache (bool, optional): If True, save the processed data in disk
-            update (bool, optional): If true, create vector dataset whether or not file
-                have already exist
+    def process(self, processor):
+        for case in self._casep.iterdir():
+            cwep = self._cookp / f"{case.name.split('_')[0]}.p"
+            if cwep.exists():
+                continue
+            files = case.glob('**/CWE*.[c,cpp]')
+            asts, labels = self._marker(files)
+            vsts = processor.process(asts)
+            assert len(vsts) == len(labels)
+            pickle.dump((vsts, labels),
+                        open(str(cwep), 'wb'),
+                        protocol=pickle.HIGHEST_PROTOCOL)
 
-        """
-        Xp = self._cookp / f'{str(processor)}_X.p'
-        Yp = self._cookp / f'{str(processor)}_Y.pt'
-        if Xp.exists() and Yp.exists():
-            print('Cache found, load from cache.')
-            self._X = pickle.load(open(str(Xp), 'rb'))
-            self._Y = torch.load(str(Yp))
-        else:
-            marked, labels = self._marker(category)
-            vrl = processor.process(marked)
-            print('Cooked success.')
-            pickle.dump(
-                vrl, open(str(Xp), 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
-            torch.save(labels, str(Yp))
-            print('Cache saved success.')
-            self._X = vrl
-            self._Y = labels
+    def load(self, category, folds):
+        tx, ty = [], []
+        vx, vy = [], []
+        for num in category:
+            cwep = self._cookp / f"{num.upper()}.p"
+            if cwep.exists():
+                vsts, labels = pickle.load(open(str(cwep), 'rb'))
+                data = list(zip(vsts, labels))
+                random.shuffle(data)
+                vsts, labels = zip(*data)
+                assert len(vsts) == len(labels)
+                lens = len(vsts)
+                if folds:
+                    coe = round((folds - 1) / folds * lens)
+                    tx.extend(vsts[:coe])
+                    ty.extend(labels[:coe])
+                    vx.extend(vsts[coe:])
+                    vy.extend(labels[coe:])
+                else:
+                    tx.extend(vsts)
+                    ty.extend(labels)
+        train = TorchSet(tx, torch.Tensor(ty).long())
+        valid = TorchSet(vx, torch.Tensor(vy).long())
+        print(f"load {len(train)}")
+        print(f"load {len(valid)}")
+        return train, valid
 
-    def _selector(self, category):
-        if not category:
-            category = ['AE', 'AF', 'AU', 'PU']
-        category = set(list(chain(*[JULIET_CATEGORY[x] for x in category])))
-        selected = [
-            x for x in self._casep.iterdir()
-            if x.name.split('_')[0] in category
-        ]
-        return set(selected)
-
-    def _marker(self, category=None):
-        files = self._selector(category)
-        marked = []
+    @staticmethod
+    def _marker(files):
+        asts = []
         labels = []
-        for ind, file in enumerate(files):
-            for file in file.glob('**/CWE*.[c,cpp]'):
-                fdecl = []
-                ast = loader_cc(str(file))
-                pr = Parser(ast)
-                decl = pr.walker(
-                    lambda x: x.is_definition and x.kind == 'FUNCTION_DECL')
-                for node in decl:
-                    if 'main' in str(node.data):
-                        break
-                    labels.append([1.0, 0.0] if 'bad' in
-                                  str(node.data) else [0.0, 1.0])
-                    fdecl.append(node)
-                marked.extend(fdecl)
-        return marked, torch.Tensor(labels)
+        for file in files:
+            sel = []
+            ast = loader_cc(str(file))
+            pr = Parser(ast)
+            decl = pr.walker(
+                lambda x: x.is_definition and x.kind == 'FUNCTION_DECL')
+            for node in decl:
+                if 'main' in str(node.data):
+                    break
+                labels.append(0.0 if 'good' in str(node.data) else 1.0)
+                sel.append(node)
+            asts.extend(decl)
+        return asts, labels
