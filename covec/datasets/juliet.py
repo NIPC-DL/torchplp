@@ -100,8 +100,8 @@ class Juliet(Dataset):
                     coe = round((folds - 1) / folds * lens)
                     tx.extend(vsts[:coe])
                     ty.extend(labels[:coe])
-                    vx.extend(vsts[coe:])
-                    vy.extend(labels[coe:])
+                    vx.extend(vsts[coe - 3000:coe])
+                    vy.extend(labels[coe - 3000:coe])
                 else:
                     tx.extend(vsts)
                     ty.extend(labels)
