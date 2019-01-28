@@ -59,7 +59,7 @@ class SySeVR(Dataset):
         else:
             print('warn: directoy exist, download cancel')
 
-    def process(self, processor, category=None, cache=True, update=False):
+    def process(self, processor):
         """Process the selected data into vector by given processor and embedder
 
         This method will update the self._X and self._Y variable point to processed
@@ -67,31 +67,11 @@ class SySeVR(Dataset):
         
         Args:
             processor (covec.processor.Processor): The process methods
-            category (None, list): The parts of Juliet Test Suite used on dataset
-                - None, default: use all categoary
-                - 'AE': Arithmetic Expression
-                - 'AF': API Function Call
-                - 'AU': Array Usage
-                - 'PU': Pointer Usage
-            cache (bool, optional): If True, save the processed data in disk
-            update (bool, optional): If true, create vector dataset whether or not file
-                have already exist
-            
+           
         """
-        saved_path = self._cookp / f'{str(processor).lower()}_vec.npz'
-        file_list = self.selector(category)
-        x_set, y_set = loader_cgd(file_list)
-        if update or not saved_path.exists():
-            x_set = processor.process(x_set, 'cgd')
-            assert len(x_set) == len(y_set)
-            self._X, self._Y = np.asarray(x_set), np.asarray(y_set)
-        else:
-            dataset = np.load(str(saved_path))
-            self._X, self._Y = dataset['arr_0'], dataset['arr_1']
-        if cache:
-            np.savez(str(saved_path), self._X, self._Y)
+        pass
 
-    def torchset(self, name=None):
+    def load(self, category, folds):
         """Return the Pytorch Dataset Object
 
         Args:
@@ -99,24 +79,4 @@ class SySeVR(Dataset):
                 will return the lastest processed data
 
         """
-        if name:
-            dataset = np.load(str(self._cookp / f'{name.lower()}_vec.npz'))
-            X, Y = dataset['arr_0'], dataset['arr_1']
-            tset = TorchSet(X, Y, 'array')
-        else:
-            tset = TorchSet(self._X, self._Y, 'array')
-        return tset
-
-    def selector(self, category):
-        """Select file from category"""
-        area = []
-        if category:
-            for i in category:
-                area.append(SYSEVR_CATEGORY[i])
-        else:
-            area = SYSEVR_CATEGORY.values()
-        file_list = []
-        for file in self._rawp.glob('**/*.txt'):
-            if file.name in area:
-                file_list.append(str(file))
-        return file_list
+        pass
