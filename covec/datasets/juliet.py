@@ -76,38 +76,40 @@ class Juliet(Dataset):
             if cwep.exists():
                 continue
             files = case.glob('**/CWE*.[c,cpp]')
-            asts, labels = self._marker(files)
-            vsts = processor.process(asts)
-            assert len(vsts) == len(labels)
-            pickle.dump((vsts, labels),
+            x, y = self._marker(files)
+            x = processor.process(x)
+            assert len(x) == len(y)
+            pickle.dump((x, y),
                         open(str(cwep), 'wb'),
                         protocol=pickle.HIGHEST_PROTOCOL)
 
-    def load(self, category, folds):
+    def load(self, category=None, folds=None):
         tx, ty = [], []
         vx, vy = [], []
+        if not category:
+            category = [i.name for i in self._cookp.glob('**/*p')]
         for num in category:
             cwep = self._cookp / f"{num.upper()}.p"
             if cwep.exists():
-                vsts, labels = pickle.load(open(str(cwep), 'rb'))
-                data = list(zip(vsts, labels))
+                x, y = pickle.load(open(str(cwep), 'rb'))
+                data = list(zip(x, y))
                 random.shuffle(data)
-                vsts, labels = zip(*data)
-                assert len(vsts) == len(labels)
-                lens = len(vsts)
+                x, y = zip(*data)
+                assert len(x) == len(y)
+                lens = len(x)
                 if folds:
                     coe = round((folds - 1) / folds * lens)
-                    tx.extend(vsts[:coe])
-                    ty.extend(labels[:coe])
-                    vx.extend(vsts[coe - 3000:coe])
-                    vy.extend(labels[coe - 3000:coe])
+                    tx.extend(x[:coe])
+                    ty.extend(y[:coe])
+                    vx.extend(x[-coe:])
+                    vy.extend(y[-coe:])
                 else:
-                    tx.extend(vsts)
-                    ty.extend(labels)
+                    tx.extend(x)
+                    ty.extend(y)
         train = TorchSet(tx, torch.Tensor(ty).long())
         valid = TorchSet(vx, torch.Tensor(vy).long())
-        print(f"load {len(train)}")
-        print(f"load {len(valid)}")
+        print(f"Load train {len(train)}")
+        print(f"Load valid {len(valid)}")
         return train, valid
 
     @staticmethod

@@ -59,7 +59,7 @@ def loader_cc(data):
     return packer_cc(tu.cursor)
 
 
-def loader_cgd(file_list):
+def loader_cgd(path):
     """Load code gadget file from path
 
     cgd file is a file looks like:
@@ -81,7 +81,7 @@ def loader_cgd(file_list):
     """
     x_set = []
     y_set = []
-    with fileinput.input(files=file_list) as f:
+    with open(path) as f:
         frag = []
         for line in f:
             if '-' * 5 not in line:

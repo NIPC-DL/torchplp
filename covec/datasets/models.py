@@ -8,6 +8,7 @@ models.py - The covec dataset model defination
 """
 import os
 import pathlib
+import torch
 from torch.utils import data
 
 
@@ -29,3 +30,16 @@ class Dataset(object):
 
     def __repr__(self):
         return self.__class__.__name__
+
+class TorchSet(data.Dataset):
+    """The Pytorch Dataset"""
+
+    def __init__(self, X, Y):
+        self._X = X
+        self._Y = Y
+
+    def __getitem__(self, index):
+        return self._X[index], self._Y[index]
+
+    def __len__(self):
+        return len(self._X)

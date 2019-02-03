@@ -66,7 +66,7 @@ class TextModel(Processor):
         
     """
 
-    def __init__(self, embedder, vsize=50):
+    def __init__(self, embedder, vsize=100):
         self._embedder = embedder
         self._vsize = vsize
 
