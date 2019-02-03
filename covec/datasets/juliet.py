@@ -17,10 +17,9 @@ import torch
 import numpy as np
 from collections import deque
 from itertools import chain
-from .models import Dataset
+from .models import Dataset, TorchSet
 from .utils import download_file
 from .constants import DOWNLOAD_URL, JULIET_CATEGORY
-from .torchset import TorchSet
 from covec.utils.loader import loader_cc
 from covec.processor import Parser
 
