@@ -26,7 +26,6 @@ setup(
     install_requires=[
         'clang',
         'requests',
-        'tqdm',
         'gensim',
     ],
 )
