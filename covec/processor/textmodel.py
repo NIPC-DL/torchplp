@@ -87,6 +87,8 @@ class TextModel(Processor):
 
         srl = []
         for code in cgd_list:
+            if len(code) == 0:
+                print('0 code')
             symr = []
             ast = loader_cc(code)
             pr = Parser(ast)
@@ -127,6 +129,8 @@ class TextModel(Processor):
         vrl = []
         for symr in srl:
             vecr = [y for x in symr for y in embedder[x]]
+            if len(vecr) == 0:
+                continue
             wsize = vecr[0].shape[0]
             if len(vecr) < vsize:
                 padding = [np.zeros(wsize) for x in range(vsize - len(vecr))]
