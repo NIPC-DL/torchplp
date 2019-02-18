@@ -51,5 +51,5 @@ class Parser:
         while queue:
             node = queue.popleft()
             for child in node.children:
-                queue.append(child)
+                queue.appendleft(child)
             yield node

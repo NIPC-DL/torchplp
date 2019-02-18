@@ -6,6 +6,7 @@ juliet.py - Juliet Test Suite (https://samate.nist.gov/SRD/testsuite.php)
 :Email: verf@protonmail.com
 :License: MIT
 """
+import pdb
 import os
 import re
 import zipfile
@@ -17,7 +18,7 @@ import torch
 import numpy as np
 from collections import deque
 from itertools import chain
-from .models import Dataset, TorchSet
+from .models import Dataset, TorchSet, TorchPathSet
 from .utils import download_file
 from .constants import DOWNLOAD_URL, JULIET_CATEGORY
 from covec.utils.loader import loader_cc
@@ -106,10 +107,15 @@ class Juliet(Dataset):
                 else:
                     tx.extend(x)
                     ty.extend(y)
-        train = TorchSet(tx, torch.Tensor(ty).long())
-        valid = TorchSet(vx, torch.Tensor(vy).long())
+        print('Start cache')
+        train_path = self._cache(tx, ty)
+        train = TorchPathSet(train_path)
         print(f"Load train {len(train)}")
-        print(f"Load valid {len(valid)}")
+        valid = None
+        if vx:
+            valid_path = self._cache(vx, vy, train=False)
+            valid = TorchPathSet(valid_path)
+            print(f"Load valid {len(valid)}")
         return train, valid
 
     @staticmethod
@@ -125,7 +131,28 @@ class Juliet(Dataset):
             for node in decl:
                 if 'main' in str(node.data):
                     break
-                labels.append(0.0 if 'good' in str(node.data) else 1.0)
+                labels.append(0 if 'good' in str(node.data) else 1)
                 sel.append(node)
             asts.extend(decl)
         return asts, labels
+
+    def _cache(self, X, Y, train=True):
+        cachep = self._rootp / 'cache'
+        cachep.mkdir(parents=True, exist_ok=True)
+        datap = cachep / 'train' if train else cachep / 'valid'
+        if datap.exists():
+            #return
+            shutil.rmtree(str(datap))
+        datap.mkdir(parents=True, exist_ok=True)
+        max_len = max([len(x) for x in X])
+        print(f'max length: {max_len}')
+        for i, x in enumerate(X):
+            pdb.set_trace()
+            pad = np.zeros(((max_len-len(x)), len(x[0]))).tolist()
+            x.extend(pad)
+            pickle.dump(x, open(str(datap / f'{i}.p'), 'wb'),
+                    protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(Y, open(str(datap / 'Y.p'), 'wb'),
+                protocol=pickle.HIGHEST_PROTOCOL)
+        return datap
+
