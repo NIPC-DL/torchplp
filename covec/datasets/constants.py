@@ -12,6 +12,8 @@ DOWNLOAD_URL = {
     "https://samate.nist.gov/SRD/testsuites/juliet/Juliet_Test_Suite_v1.3_for_C_Cpp.zip",
     "sysevr":
     "https://github.com/SySeVR/SySeVR.git",
+    "vuldeepecker":
+    "https://github.com/CGCL-codes/VulDeePecker.git",
 }
 # AE: Arithmetic Expression, AF: API Function Call, AU: Array Usage, PU: Pointer Usage
 JULIET_CATEGORY = {

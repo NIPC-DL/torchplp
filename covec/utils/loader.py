@@ -84,10 +84,13 @@ def loader_cgd(path):
     with open(path) as f:
         frag = []
         for line in f:
-            if '-' * 5 not in line:
+            if '-' * 20 not in line:
                 frag.append(line[:-1])
             else:
-                x_set.append(frag[2:-1])
+                if len(frag) < 2:
+                    print('< frag')
                 y_set.append(int(frag[-1]))
+                x_set.append(frag[1:-1])
                 frag = []
+    assert len(x_set) == len(y_set)
     return x_set, y_set
