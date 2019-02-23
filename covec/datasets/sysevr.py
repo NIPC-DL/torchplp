@@ -114,8 +114,8 @@ class SySeVR(Dataset):
                     coe = round((folds - 1) / folds * lens)
                     tx.extend(x[:coe])
                     ty.extend(y[:coe])
-                    vx.extend(x[-coe:])
-                    vy.extend(y[-coe:])
+                    vx.extend(x[coe:])
+                    vy.extend(y[coe:])
                 else:
                     tx.extend(vsts)
                     ty.extend(labels)
