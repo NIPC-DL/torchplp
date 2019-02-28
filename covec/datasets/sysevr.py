@@ -72,6 +72,7 @@ class SySeVR(Dataset):
         Args:
             processor (covec.processor.Processor): The process methods
            """
+        print(f'Start Processing: {str(processor)}')
         for file in self._rawp.glob('**/*.txt'):
             if 'API' in file.name:
                 file_name = 'AF'
@@ -84,10 +85,26 @@ class SySeVR(Dataset):
             filep = self._cookp / f'{file_name.lower()}.p'
             if filep.exists():
                 continue
+            print(f'Create {filep.name} from {file.name}')
             x, y = loader_cgd(str(file))
-            x = processor.process(x, 'cgd')
-            pickle.dump((x,y), open(str(filep), 'wb'),
-                        protocol=pickle.HIGHEST_PROTOCOL)
+            assert len(x) == len(y) > 0
+            print(f'Processing')
+            if file_name == 'PU':
+                # coe = round(len(x)/3)
+                # x1 = processor.process(x[:coe], 'cgd')
+                # pickle.dump((x1,y[:coe]), open(str(self._cookp / 'pu1.p'), 'wb'),
+                #             protocol=pickle.HIGHEST_PROTOCOL)
+                # x2 = processor.process(x[coe:coe*2], 'cgd')
+                # pickle.dump((x2,y[coe:coe*2]), open(str(self._cookp / 'pu2.p'), 'wb'),
+                #             protocol=pickle.HIGHEST_PROTOCOL)
+                # x3 = processor.process(x[coe*2:], 'cgd')
+                # pickle.dump((x2,y[coe*2:]), open(str(self._cookp / 'pu3.p'), 'wb'),
+                #             protocol=pickle.HIGHEST_PROTOCOL)
+                pass
+            else:
+                x = processor.process(x, 'cgd')
+                pickle.dump((x,y), open(str(filep), 'wb'),
+                            protocol=pickle.HIGHEST_PROTOCOL)
 
     def load(self, category=None, folds=None):
         """Return the Pytorch Dataset Object
@@ -101,10 +118,11 @@ class SySeVR(Dataset):
         tx, ty = [], []
         vx, vy = [], []
         if not category:
-            category = ['AF', 'AE', 'PU', 'AU']
+            category = ['AF', 'AE', 'PU1', 'PU2', 'PU3', 'AU']
         for file in category:
             filep = self._cookp / f"{file.lower()}.p"
             if filep.exists():
+                print(f'Load {str(filep)}')
                 x, y= pickle.load(open(str(filep), 'rb'))
                 data = list(zip(x, y))
                 random.shuffle(data)
