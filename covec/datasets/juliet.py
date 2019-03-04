@@ -9,8 +9,9 @@ juliet.py - Juliet Test Suite (https://samate.nist.gov/SRD/testsuite.php)
 import zipfile
 import pickle
 import random
-import torch
-from .models import Dataset, TorchSet
+import shutil
+import numpy as np
+from .models import Dataset, TorchPathSet
 from .utils import download_file
 from .constants import DOWNLOAD_URL
 from covec.utils.loader import loader_cc
@@ -85,6 +86,7 @@ class Juliet(Dataset):
             cwep = self._cookp / f"{num.upper()}.p"
             if cwep.exists():
                 x, y = pickle.load(open(str(cwep), 'rb'))
+                print(f'Load {str(cwep)}')
                 data = list(zip(x, y))
                 random.shuffle(data)
                 x, y = zip(*data)
@@ -94,15 +96,23 @@ class Juliet(Dataset):
                     coe = round((folds - 1) / folds * lens)
                     tx.extend(x[:coe])
                     ty.extend(y[:coe])
-                    vx.extend(x[-coe:])
-                    vy.extend(y[-coe:])
+                    vx.extend(x[coe:])
+                    vy.extend(y[coe:])
                 else:
                     tx.extend(x)
                     ty.extend(y)
-        train = TorchSet(tx, torch.Tensor(ty).long())
-        valid = TorchSet(vx, torch.Tensor(vy).long())
-        print(f"Load train {len(train)}")
-        print(f"Load valid {len(valid)}")
+        assert len(tx) == len(ty)
+        print('Start train cache')
+        train_path = self._cache2(tx, ty)
+        train = TorchPathSet(train_path)
+        print(f'Load train {len(train)}')
+        valid = None
+        if bool(vx):
+            assert len(vx) == len(vy)
+            print('Start valid cache')
+            valid_path = self._cache2(vx, vy, train=False)
+            valid = TorchPathSet(valid_path)
+            print(f'Load valid {len(valid)}')
         return train, valid
 
     @staticmethod
@@ -110,15 +120,59 @@ class Juliet(Dataset):
         asts = []
         labels = []
         for file in files:
-            sel = []
             ast = loader_cc(str(file))
             pr = Parser(ast)
             decl = pr.walker(
                 lambda x: x.is_definition and x.kind == 'FUNCTION_DECL')
             for node in decl:
                 if 'main' in str(node.data):
-                    break
-                labels.append(0.0 if 'good' in str(node.data) else 1.0)
-                sel.append(node)
-            asts.extend(decl)
+                    continue
+                pr = Parser(node)
+                node_list = pr.walker()
+                if len(node_list) < 5:
+                    continue
+                labels.append(0 if 'good' in str(node.data) else 1)
+                asts.append(node)
+        assert len(asts) == len(labels)
         return asts, labels
+
+    def _cache(self, X, Y, train=True):
+        cachep = self._rootp / 'cache'
+        cachep.mkdir(parents=True, exist_ok=True)
+        datap = cachep / 'train' if train else cachep / 'valid'
+        if datap.exists():
+            # return datap
+            shutil.rmtree(str(datap))
+        datap.mkdir(parents=True, exist_ok=True)
+        max_len = max([len(x) for x in X])
+        print(f'max length: {max_len}')
+        for i, x in enumerate(X):
+            tmp = x[:]
+            pad = np.zeros(((max_len-len(x)), len(x[0]))).tolist()
+            tmp.extend(pad)
+            with open(str(datap / f'{i}.p'), 'wb') as f:
+                pickle.dump(tmp, f, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(str(datap / 'Y.p'), 'wb') as f:
+            pickle.dump(Y[:], f, protocol=pickle.HIGHEST_PROTOCOL)
+        return datap
+
+    def _cache2(self, X, Y, train=True):
+        cachep = self._rootp / 'cache'
+        cachep.mkdir(parents=True, exist_ok=True)
+        datap = cachep / 'train' if train else cachep / 'valid'
+        if datap.exists():
+            # return datap
+            shutil.rmtree(str(datap))
+        datap.mkdir(parents=True, exist_ok=True)
+        for i, x in enumerate(X):
+            tmp = x[:]
+            if len(tmp) < 433:
+                pad = np.zeros(((433-len(tmp)), len(tmp[0]))).tolist()
+                tmp.extend(pad)
+            else:
+                tmp = x[:433]
+            with open(str(datap / f'{i}.p'), 'wb') as f:
+                pickle.dump(tmp, f, protocol=pickle.HIGHEST_PROTOCOL)
+        with open(str(datap / 'Y.p'), 'wb') as f:
+            pickle.dump(Y[:], f, protocol=pickle.HIGHEST_PROTOCOL)
+        return datap

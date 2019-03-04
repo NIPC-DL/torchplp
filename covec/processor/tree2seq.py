@@ -1,34 +1,26 @@
 # -*- coding: utf-8 -*-
 """
-treemod.py - The Tree Model Processor
+tree2seq.py - This processor transform tree structrue to sequence structrue
 
 :Author: Verf
 :Email: verf@protonmail.com
 :License: MIT
 """
 import re
-import pickle
-import torch
 import numpy as np
-from hashlib import sha256
-from struct import unpack
 from .models import Processor
 from .parser import Parser
-from covec.utils.vstree import VSTNode
 
-
-class TreeModel(Processor):
-    """
-    
-    Args:
-        embedder (covec.processor.WordsModel.model): The words model that map words to vector
-        length (int): The length of vector for VST Node
-        
-    """
-
-    def __init__(self, embedder, length):
+class Tree2Seq(Processor):
+    def __init__(self, embedder):
         self._embedder = embedder
-        self._length = length
+
+    def process(self, data, pretrain=False):
+        srl = [self.standarlize(x) for x in data]
+        if not pretrain:
+            self._pretrain(srl)
+        vrl = [self.vectorlize(x) for x in srl]
+        return vrl
 
     @staticmethod
     def standarlize(root):
@@ -64,41 +56,16 @@ class TreeModel(Processor):
         through a words model.
 
         Args:
-            srl (list): The list of symbolic representation
-            embedder (covec.processor.WordsModel.model): The words model that map words to vector
-            length (int): The length of vector for AST Node
+            root (ASTNode): The Abstract Syntax Tree Node
 
         """
-        vst = VSTNode()
-        data_vec = self._embedder[root.data] if root.data else np.zeros(
-            int(self._length / 2))
-        kind_vec = self._embedder[root.kind] if root.kind else np.zeros(
-            int(self._length / 2))
-        data_vec = torch.from_numpy(data_vec).float()
-        kind_vec = torch.from_numpy(kind_vec).float()
-        vst.vector = torch.cat((data_vec, kind_vec), 0)
-        for c in root.children:
-            child = self.vectorlize(c)
-            vst.children.append(child)
-            child.parent = vst
-        return vst
-
-    def process(self, data, pretrain=False):
-        """Process input data and output vector data
-        
-        Args:
-            data (list): The list of AST Node
-            pretrain (bool, optional): If embedder is pretrained, don't train it
-                by current dataset
-
-        """
-
-        srl = [self.standarlize(x) for x in data]
-        if not pretrain:
-            self._pretrain(data)
-        vrl = [self.vectorlize(x) for x in srl]
+        vrl = []
+        pr = Parser(root)
+        for node in pr.walk():
+            vec = self._embedder[node.data] if node.data else self._embedder[node.kind]
+            vrl.append(vec.tolist())
         return vrl
-
+    
     def _pretrain(self, data):
         """Training the embedder by given data
         
