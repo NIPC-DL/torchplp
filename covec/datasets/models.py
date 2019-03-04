@@ -48,16 +48,17 @@ class TorchSet(data.Dataset):
 
 class TorchPathSet(data.Dataset):
     def __init__(self, path):
-        self._X = list(path.glob('**/*.p')).sort()
-        self._Y = pickle.load(str(path / 'Y.p'))
-        assert len(self._X) == len(self._Y)
+        self._P = path
+        with open(str(path / 'Y.p'), 'rb') as f:
+            self._Y = pickle.load(f)
 
     def __getitem__(self, index):
-        x = self._X[index]
         y = self._Y[index]
-        x = pickle.load(str(x))
+        with open(str(self._P / f'{index}.p'), 'rb') as f:
+            x = pickle.load(f)
         x = torch.as_tensor(x).float()
-        y = torch.as_tensor(y).long()
+        y = torch.Tensor([0.0, 1.0]).float() if y == 0 else torch.Tensor([1.0,
+            0.0]).float()
         return x, y
 
     def __len__(self):
