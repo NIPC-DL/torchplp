@@ -6,20 +6,13 @@ juliet.py - Juliet Test Suite (https://samate.nist.gov/SRD/testsuite.php)
 :Email: verf@protonmail.com
 :License: MIT
 """
-import os
-import re
 import zipfile
-import pathlib
-import shutil
 import pickle
 import random
 import torch
-import numpy as np
-from collections import deque
-from itertools import chain
 from .models import Dataset, TorchSet
 from .utils import download_file
-from .constants import DOWNLOAD_URL, JULIET_CATEGORY
+from .constants import DOWNLOAD_URL
 from covec.utils.loader import loader_cc
 from covec.processor import Parser
 
