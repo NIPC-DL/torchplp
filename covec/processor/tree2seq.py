@@ -12,9 +12,8 @@ from .models import Processor
 from .parser import Parser
 
 class Tree2Seq(Processor):
-    def __init__(self, embedder, length):
+    def __init__(self, embedder):
         self._embedder = embedder
-        self._length = length
 
     def process(self, data, pretrain=False):
         srl = [self.standarlize(x) for x in data]
@@ -63,11 +62,7 @@ class Tree2Seq(Processor):
         vrl = []
         pr = Parser(root)
         for node in pr.walk():
-            data_vec = self._embedder[node.data] if node.data else np.zeros(
-                int(self._length / 2))
-            kind_vec = self._embedder[node.kind] if node.kind else np.zeros(
-                int(self._length / 2))
-            vec = np.append(data_vec, kind_vec)
+            vec = self._embedder[node.data] if node.data else self._embedder[node.kind]
             vrl.append(vec.tolist())
         return vrl
     
