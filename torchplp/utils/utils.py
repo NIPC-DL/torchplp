@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-utils.py - The utils function for datasets
+utils.py - The collection of utils
 
 :Author: Verf
 :Email: verf@protonmail.com
@@ -8,11 +8,11 @@ utils.py - The utils function for datasets
 """
 import os
 import requests
-from tqdm import tqdm
+import torch
 from subprocess import call
 
 
-def download_file(url, path, proxy):
+def download_file(url, path, proxy=None):
     """Donwloade file from url
 
     Args:
@@ -32,16 +32,9 @@ def download_file(url, path, proxy):
         r = requests.get(url, stream=True, proxies=proxies)
     else:
         r = requests.get(url, stream=True)
-    total_size = int(r.headers["Content-Length"])
     chunk_size = 1024
-    bar_num = int(total_size / chunk_size)
     with open(str(path / url.split('/')[-1]), 'wb') as f:
-        for chunk in tqdm(
-                iterable=r.iter_content(chunk_size=chunk_size),
-                total=bar_num,
-                unit='KB',
-                leave=True,
-        ):
+        for chunk in r.iter_content(chunk_size=chunk_size):
             if chunk:
                 f.write(chunk)
 
@@ -58,3 +51,11 @@ def git_clone_file(url, path):
         call(['git', 'clone', url, path])
     else:
         raise SystemError("git not found, please install git first.")
+
+def i2h(labels, classes):
+    """convert int to one-hot"""
+    y = torch.LongTensor(labels)
+    y_onehot = torch.FloatTensor(len(labels), classes)
+    y_onehot.zero_()
+    y_onehot.scatter_(1, y, 1)
+    return y_onehot

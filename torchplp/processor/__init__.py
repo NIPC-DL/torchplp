@@ -7,18 +7,16 @@ This subpackage is the collection of all process for datasets
 :License: MIT
 """
 from .textmodel import TextModel
-from .treemodel import TreeModel
 from .tree2seq import Tree2Seq
-from .embedding import Word2Vec
-from .models import Processor, WordsModel
-from .parser import Parser
+from .embedder import Word2Vec
+from .models import Processor, Embedder
+from .parser import ASTParser
 
 __all__ = [
     'TextModel',
-    'TreeModel',
     'Tree2Seq',
     'Word2Vec',
     'Processor',
-    'WordsModel',
-    'Parser',
+    'Embedder',
+    'ASTParser',
 ]

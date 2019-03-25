@@ -7,36 +7,27 @@ tree2seq.py - This processor transform tree structrue to sequence structrue
 :License: MIT
 """
 import re
-import numpy as np
 from .models import Processor
-from .parser import Parser
+from .parser import ASTParser
 
 class Tree2Seq(Processor):
     def __init__(self, embedder):
         self._embedder = embedder
 
-    def process(self, data, pretrain=False):
-        srl = [self.standarlize(x) for x in data]
-        if not pretrain:
-            self._pretrain(srl)
-        vrl = [self.vectorlize(x) for x in srl]
-        return vrl
-
-    @staticmethod
-    def standarlize(root):
+    def standarlize(self, root):
         """
         This function replace the user-defined variable and function name
         to fixed name such as var0, var1 and fun0, fun1, which we called 
-        standarlize. In SySeVR, they called this procedure symbolize.
+        standarlize.
 
         Args:
-            data (list): The list of AST
+            root (torchplp.utils.ASTNode): The AST of code
 
         Return:
-            data (list): The standarlize data list
+            root (torchplp.utils.ASTNode): The standarlized AST of code
 
         """
-        pr = Parser(root)
+        pr = ASTParser(root)
         var_decl = pr.walker(lambda x: x.kind == 'VAR_DECL')
         var_names = [x.data for x in var_decl]
         fun_decl = pr.walker(lambda x: x.kind == 'FUNCTION_DECL')
@@ -56,16 +47,28 @@ class Tree2Seq(Processor):
         through a words model.
 
         Args:
-            root (ASTNode): The Abstract Syntax Tree Node
+            root (torchplp.utils.ASTNode): The AST of code
 
         """
-        vrl = []
-        pr = Parser(root)
+        vr = []
+        pr = ASTParser(root)
         for node in pr.walk():
             vec = self._embedder[node.data] if node.data else self._embedder[node.kind]
-            vrl.append(vec.tolist())
-        return vrl
+            vr.append(vec.tolist())
+        return vr
     
+    def process(self, data, pretrain=False):
+        """Process AST and output their vector representation"""
+        if isinstance(data, list):
+            sr = [self.standarlize(x) for x in data]
+            if not pretrain:
+                self._pretrain(sr)
+            vr = [self.vectorlize(x) for x in sr]
+        else:
+            sr = self.standarlize(data)
+            vr = self.vectorlize(sr)
+        return vr
+
     def _pretrain(self, data):
         """Training the embedder by given data
         
@@ -76,7 +79,7 @@ class Tree2Seq(Processor):
         sent = []
         for root in data:
             atoms = []
-            pr = Parser(root)
+            pr = ASTParser(root)
             for node in pr.walk():
                 if node.data:
                     atoms.append(node.data)

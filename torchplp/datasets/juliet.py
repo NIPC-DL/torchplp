@@ -12,10 +12,9 @@ import random
 import shutil
 import numpy as np
 from .models import Dataset, TorchPathSet
-from .utils import download_file
-from .constants import DOWNLOAD_URL
-from covec.utils.loader import loader_cc
-from covec.processor import Parser
+from torchplp.utils.loader import loader_cc
+from torchplp.utils.utils import download_file
+from torchplp.processor import ASTParser
 
 
 class Juliet(Dataset):
@@ -49,7 +48,7 @@ class Juliet(Dataset):
                     'socks5://user:pass@host:port'
 
         """
-        url = DOWNLOAD_URL['juliet']
+        url = ''
         print(f'Download from {url}')
         if not self._casep.exists():
             download_file(url, self._rawp, proxy)
@@ -121,13 +120,13 @@ class Juliet(Dataset):
         labels = []
         for file in files:
             ast = loader_cc(str(file))
-            pr = Parser(ast)
+            pr = ASTParser(ast)
             decl = pr.walker(
                 lambda x: x.is_definition and x.kind == 'FUNCTION_DECL')
             for node in decl:
                 if 'main' in str(node.data):
                     continue
-                pr = Parser(node)
+                pr = ASTParser(node)
                 node_list = pr.walker()
                 if len(node_list) < 5:
                     continue

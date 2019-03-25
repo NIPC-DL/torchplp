@@ -6,15 +6,17 @@ parser.py - The data parser for covec
 :Email: verf@protonmail.com
 :License: MIT
 """
+from .models import Parser
 from collections import deque
-from covec.utils.astree import ASTNode
+from torchplp.utils import ASTNode
 
 
-class Parser:
-    """The AST Parser
+class ASTParser(Parser):
+    """The Abstract Syntax Tree ASTParser
     
     Args:
-        root(covec.processor.ASTNode): The root node of AST
+        root(torchplp.utils.ASTNode): The root node of AST
+
     """
 
     def __init__(self, root):
@@ -25,14 +27,16 @@ class Parser:
 
     def walker(self, selector=lambda x: True):
         """
-        BFS every child of root and return selected node,
+        Breadth-First search every child of root and return selected node,
         if selector not given, return list of all node.
 
         Args:
-            root(covec.processor.ASTNode): The root node of AST selector <function, optional>: select which node you want
+            root (torchplp.utils.ASTNode): root node of AST
+            selector (function, optional): function to select neeeded node
 
         Return:
-            selected(list): list of selected node
+            selected (list): list of selected node
+
         """
         selected = []
         queue = deque()
@@ -46,6 +50,10 @@ class Parser:
         return selected
 
     def walk(self):
+        """
+        Breadth-First search every child of root and return searched node.
+        Generator style of walk
+        """
         queue = deque()
         queue.append(self._root)
         while queue:

@@ -6,3 +6,8 @@ This subpackage is the collection of some usefully utils for covec
 :Email: verf@protonmail.com
 :License: MIT
 """
+from .astree import ASTNode
+
+__all__ = [
+    'ASTNode',
+]

@@ -13,13 +13,13 @@ from tempfile import NamedTemporaryFile
 
 
 def packer_cc(root):
-    """Transform clang ast to covec ast
+    """Transform clang ast to torchplp ast
 
     Args:
-        root (clang.cindex.Cursor): root of clang ast
+        root (torchplp.cindex.Cursor): root of clang ast
     
     Return:
-        ast (covec.utils.ast.ASTNode): covec ast
+        ast (torchplp.utils.ASTNode): torchplp ast node
     """
     ast = ASTNode()
     ast.id = root.hash
@@ -46,7 +46,7 @@ def loader_cc(data):
         path (str): path of the file
     
     Return:
-        ast (covec.utils.ast.ASTNode): Abstract Syntax Tree
+        ast (torchplp.utils.ASTNode): Abstract Syntax Tree
     """
     index = cc.Index.create()
     if isinstance(data, list):
@@ -59,7 +59,7 @@ def loader_cc(data):
     return packer_cc(tu.cursor)
 
 
-def loader_cgd(path):
+def loader_cgd(path, spliter='-'*20):
     """Load code gadget file from path
 
     cgd file is a file looks like:
@@ -84,13 +84,13 @@ def loader_cgd(path):
     with open(path) as f:
         frag = []
         for line in f:
-            if '-' * 20 not in line:
+            if spliter not in line:
                 frag.append(line[:-1])
             else:
-                if len(frag) < 2:
-                    print('< frag')
-                y_set.append(int(frag[-1]))
+                if len(frag) < 3:
+                   continue 
                 x_set.append(frag[1:-1])
+                y_set.append(int(frag[-1]))
                 frag = []
     assert len(x_set) == len(y_set)
     return x_set, y_set

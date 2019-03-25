@@ -6,20 +6,14 @@ sysevr.py - SySeVr Dataset defination
 :Email: verf@protonmail.com
 :License: MIT
 """
-import os
-import re
 import zipfile
 import random
 import shutil
 import pickle
 import torch
-import numpy as np
-from torch.utils.data import DataLoader
-from .utils import download_file, git_clone_file
-from .constants import DOWNLOAD_URL, JULIET_CATEGORY, SYSEVR_CATEGORY
 from .models import Dataset, TorchSet
-from covec.processor import TextModel, Word2Vec
-from covec.utils.loader import loader_cgd
+from torchplp.utils.loader import loader_cgd
+from torchplp.utils.utils import git_clone_file
 
 
 class SySeVR(Dataset):
@@ -44,7 +38,7 @@ class SySeVR(Dataset):
 
     def download(self):
         """Download SySeVR Datasets from their Github Repo"""
-        url = DOWNLOAD_URL['sysevr']
+        url = ''
         print(f'git clone from {url}')
         # download sysevr dataset
         clone_path = self._rawp / 'SySeVR.git'
@@ -61,7 +55,7 @@ class SySeVR(Dataset):
                 shutil.move(str(text), str(self._rawp))
                 shutil.rmtree(text.parent, ignore_errors=True)
         else:
-            print('warn: directoy exist, download cancel')
+            print(f'{str(clone_path)} exist, download cancel')
 
     def process(self, processor):
         """Process the selected data into vector by given processor and embedder
@@ -90,17 +84,7 @@ class SySeVR(Dataset):
             assert len(x) == len(y) > 0
             print(f'Processing')
             if file_name == 'PU':
-                # coe = round(len(x)/3)
-                # x1 = processor.process(x[:coe], 'cgd')
-                # pickle.dump((x1,y[:coe]), open(str(self._cookp / 'pu1.p'), 'wb'),
-                #             protocol=pickle.HIGHEST_PROTOCOL)
-                # x2 = processor.process(x[coe:coe*2], 'cgd')
-                # pickle.dump((x2,y[coe:coe*2]), open(str(self._cookp / 'pu2.p'), 'wb'),
-                #             protocol=pickle.HIGHEST_PROTOCOL)
-                # x3 = processor.process(x[coe*2:], 'cgd')
-                # pickle.dump((x2,y[coe*2:]), open(str(self._cookp / 'pu3.p'), 'wb'),
-                #             protocol=pickle.HIGHEST_PROTOCOL)
-                pass
+                continue
             else:
                 x = processor.process(x, 'cgd')
                 pickle.dump((x,y), open(str(filep), 'wb'),
@@ -118,7 +102,7 @@ class SySeVR(Dataset):
         tx, ty = [], []
         vx, vy = [], []
         if not category:
-            category = ['AF', 'AE', 'PU1', 'PU2', 'PU3', 'AU']
+            category = ['AF', 'AE', 'AU']
         for file in category:
             filep = self._cookp / f"{file.lower()}.p"
             if filep.exists():
@@ -136,11 +120,10 @@ class SySeVR(Dataset):
                     vx.extend(x[coe:])
                     vy.extend(y[coe:])
                 else:
-                    tx.extend(vsts)
-                    ty.extend(labels)
+                    tx.extend(x)
+                    ty.extend(y)
         train = TorchSet(torch.Tensor(tx).float(), torch.Tensor(ty).long())
         valid = TorchSet(torch.Tensor(vx).float(), torch.Tensor(vy).long())
         print(f"Load train {len(train)}")
         print(f"Load valid {len(valid)}")
         return train, valid
-

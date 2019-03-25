@@ -19,7 +19,7 @@ setup(
     author='NIPC-DL',
     author_email='verf@protonmail.com',
     url="https://github.com/NIPC-DL/torchplp",
-    description='datasets and process methods for program source code analysis,
+    description='datasets and process methods for program source code analysis',
     long_description=readme(),
     license='MIT',
     classifiers=[

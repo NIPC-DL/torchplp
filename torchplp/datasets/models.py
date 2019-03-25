@@ -57,8 +57,9 @@ class TorchPathSet(data.Dataset):
         with open(str(self._P / f'{index}.p'), 'rb') as f:
             x = pickle.load(f)
         x = torch.as_tensor(x).float()
-        y = torch.Tensor([0.0, 1.0]).float() if y == 0 else torch.Tensor([1.0,
-            0.0]).float()
+        y = torch.Tensor([1.0, 0.0]).float() if int(y) == 0 else torch.Tensor([0.0,
+            1.0]).float()
+        # y = torch.Tensor([y]).long()
         return x, y
 
     def __len__(self):

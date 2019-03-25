@@ -18,8 +18,8 @@ from torch.utils.data import DataLoader
 from .utils import download_file, git_clone_file
 from .constants import DOWNLOAD_URL
 from .models import Dataset, TorchSet
-from covec.processor import TextModel, Word2Vec
-from covec.utils.loader import loader_cgd
+from torchplp.processor import TextModel, Word2Vec
+from torchplp.utils.loader import loader_cgd
 
 
 class VulDeePecker(Dataset):
@@ -66,9 +66,9 @@ class VulDeePecker(Dataset):
             if filep.exists():
                 continue
             x, y = loader_cgd(str(file))
-            assert len(x) == len(y)
+            assert T(x) == T(y)
             x = processor.process(x, 'cgd')
-            assert len(x) == len(y)
+            assert T(x) == T(y)
             pickle.dump((x,y), open(str(filep), 'wb'),
                         protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -89,12 +89,12 @@ class VulDeePecker(Dataset):
             filep = self._cookp / f"{file}_cgd.p"
             if filep.exists():
                 x, y= pickle.load(open(str(filep), 'rb'))
-                assert len(x) == len(y)
+                assert T(x) == T(y)
                 data = list(zip(x, y))
                 random.shuffle(data)
                 x, y = zip(*data)
-                assert len(x) == len(y)
-                lens = len(x)
+                assert T(x) == T(y)
+                lens = T(x)
                 if folds:
                     coe = round((folds - 1) / folds * lens)
                     print(coe)
@@ -107,6 +107,6 @@ class VulDeePecker(Dataset):
                     ty.extend(labels)
         train = TorchSet(torch.Tensor(tx).float(), torch.Tensor(ty).long())
         valid = TorchSet(torch.Tensor(vx).float(), torch.Tensor(vy).long())
-        print(f"Load train {len(train)}")
-        print(f"Load valid {len(valid)}")
+        print(f"Load train {T(train)}")
+        print(f"Load valid {T(valid)}")
         return train, valid

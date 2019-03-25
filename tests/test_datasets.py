@@ -9,8 +9,8 @@ test_juliet.py - test juliet class
 """
 import os
 import sys
-from covec.datasets import Juliet, SySeVR
-from covec.processor import TextModel, TreeModel, Word2Vec, Parser
+from torchplp.datasets import Juliet, SySeVR
+from torchplp.processor import TextModel, TreeModel, Word2Vec, ASTParser
 from multiprocessing import cpu_count
 from torch.utils.data import DataLoader
 
