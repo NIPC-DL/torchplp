@@ -10,20 +10,10 @@ import pathlib
 import zipfile
 import torch
 import torch.utils.data as data
-import torchplp.processor.processor as pr
-from torchplp.models import Jsix
 from torchplp.utils.utils import download_file, i2h
 from torchplp.utils.loader import loader_cc
 
 url = 'https://samate.nist.gov/SRD/testsuites/juliet/Juliet_Test_Suite_v1.3_for_C_Cpp.zip'
-
-default_wm = Jsix()
-default_processor = pr.Compose([
-    pr.Standardize(),
-    pr.Tree2Seq(),
-    pr.Vectorlize(default_wm),
-])
-
 
 class JulietN(data.Dataset):
     def __init__(self,
@@ -37,20 +27,22 @@ class JulietN(data.Dataset):
         self._root = self._root / 'Juliet'
         self._root.mkdir(parents=True, exist_ok=True)
         self._case = self._root / 'C' / 'testcases'
+        self._processor = processor
         if download:
             self.download(proxy)
-        self._processor = processor
         assert label_type in ['int', 'float', 'onehot']
         self._label_type = label_type
-        self._x, self._y, self._dist = self.load(category)
+        self.process()
+        x, self._y, self._dist = self.load(category)
+        self._x, self._len = self.process(x)
 
     def __getitem__(self, index):
         x = self._x[index]
+        l = self._len[index]
         y = self._y[index]
-        x = self._processor(x)
         x = torch.from_numpy(x)
         y = self._label_transform(y)
-        return x, y
+        return x, l, y
 
     def __len__(self):
         return len(self._y)
@@ -75,6 +67,10 @@ class JulietN(data.Dataset):
             print('Extracting success')
         else:
             print(f"Path {str(self._case)} exist, download cancel.")
+
+    def process(x):
+        x, lens = self._processor(x)
+        return x, lens
 
     def load(self, category):
         dist = [0]

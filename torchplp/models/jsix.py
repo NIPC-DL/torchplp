@@ -14,7 +14,7 @@ from torchplp.utils.utils import download_file
 
 url = 'https://nas.dothings.top:5002/NIPCDL/Jsix/jsix_{}.w2v'
 
-def Jsix(root='/tmp', length=100, delete=True, proxy=None):
+def jsix(root='/tmp', length=100, delete=True, proxy=None):
     root = pathlib.Path(root).expanduser()
     file = root / f'jsix_{length}.w2v'
     download_file(url.format(length), root, proxy)

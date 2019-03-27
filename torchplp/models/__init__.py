@@ -7,8 +7,8 @@ __init__.py - models init
 :Email: verf@protonmail.com
 :License: MIT
 """
-from .jsix import Jsix
+from .jsix import jsix
 
 __all__ = [
-    'Jsix',
+    'jsix',
 ]

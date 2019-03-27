@@ -65,3 +65,7 @@ class Word2Vec(Embedder):
     @property
     def length(self):
         return len(self._model.wv.vocab)
+
+    @property
+    def vector_size(self):
+        return self._model.vector_size

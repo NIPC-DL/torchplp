@@ -38,6 +38,6 @@ def vectorlize(data, embedder):
 def padding(data, max_length, word_size):
     real_length = data.shape(0)
     if data.shape(0) < max_length:
-        pad = np.zeros((length-data.shape(0), word_size))
+        pad = np.zeros((max_length-real_length, word_size))
         data = np.concatenate((data, pad), axis=0)
     return data, real_length
