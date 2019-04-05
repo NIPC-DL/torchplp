@@ -6,16 +6,14 @@ juliet.py - Juliet Test Suite (https://samate.nist.gov/SRD/testsuite.php)
 :Email: verf@protonmail.com
 :License: MIT
 """
+import re
+import numpy as np
 import zipfile
 import pickle
 import random
-import shutil
-import numpy as np
-from .models import Dataset, TorchPathSet
 from torchplp.utils.loader import loader_cc
 from torchplp.utils.utils import download_file
-from torchplp.processor import ASTParser
-
+from .models import Dataset, TorchPathSet
 
 class Juliet(Dataset):
     """Juliet Test Suite <https://samate.nist.gov/SRD/testsuite.php>
@@ -37,7 +35,7 @@ class Juliet(Dataset):
             self.download(proxy)
         # process raw dataset by given processor
         if processor:
-            self.process(processor)
+            self._processor = processor
 
     def download(self, proxy):
         """Download Juliet Test Suiet from NIST website
@@ -48,7 +46,7 @@ class Juliet(Dataset):
                     'socks5://user:pass@host:port'
 
         """
-        url = ''
+        url = 'https://samate.nist.gov/SRD/testsuites/juliet/Juliet_Test_Suite_v1.3_for_C_Cpp.zip'
         print(f'Download from {url}')
         if not self._casep.exists():
             download_file(url, self._rawp, proxy)
@@ -60,118 +58,88 @@ class Juliet(Dataset):
             print('Extracting success')
         else:
             print(
-                f"Path {str(self._rawp / 'testcases')} exist, download cancel."
-            )
+                    f"Path {str(self._rawp / 'testcases')} exist, download cancel."
+                    )
 
-    def process(self, processor):
-        for case in self._casep.iterdir():
-            cwep = self._cookp / f"{case.name.split('_')[0]}.p"
-            if cwep.exists():
-                continue
-            files = case.glob('**/CWE*.[c,cpp]')
-            x, y = self._marker(files)
-            x = processor.process(x)
-            assert len(x) == len(y)
-            pickle.dump((x, y),
-                        open(str(cwep), 'wb'),
-                        protocol=pickle.HIGHEST_PROTOCOL)
+            def process(self, cwep):
+                pass
 
-    def load(self, category=None, folds=None):
-        tx, ty = [], []
-        vx, vy = [], []
-        if not category:
-            category = [i.name for i in self._cookp.glob('**/*p')]
-        for num in category:
-            cwep = self._cookp / f"{num.upper()}.p"
-            if cwep.exists():
-                x, y = pickle.load(open(str(cwep), 'rb'))
-                print(f'Load {str(cwep)}')
-                data = list(zip(x, y))
-                random.shuffle(data)
-                x, y = zip(*data)
-                assert len(x) == len(y)
-                lens = len(x)
-                if folds:
-                    coe = round((folds - 1) / folds * lens)
-                    tx.extend(x[:coe])
-                    ty.extend(y[:coe])
-                    vx.extend(x[coe:])
-                    vy.extend(y[coe:])
-                else:
-                    tx.extend(x)
-                    ty.extend(y)
-        assert len(tx) == len(ty)
-        print('Start train cache')
-        train_path = self._cache2(tx, ty)
-        train = TorchPathSet(train_path)
-        print(f'Load train {len(train)}')
-        valid = None
-        if bool(vx):
-            assert len(vx) == len(vy)
-            print('Start valid cache')
-            valid_path = self._cache2(vx, vy, train=False)
-            valid = TorchPathSet(valid_path)
-            print(f'Load valid {len(valid)}')
-        return train, valid
+    def load(self, category=None, coe=None, cache=True):
+        if (self._rootp / 'train.pkl').exists():
+            with open(self._rootp / 'train.pkl', 'rb') as f:
+                train = pickle.load(f)
+            with open(self._rootp / 'valid.pkl', 'rb') as f:
+                valid = pickle.load(f)
+            with open(self._rootp / 'tests.pkl', 'rb') as f:
+                tests = pickle.load(f)
+            train_set = TorchPathSet(train)
+            valid_set = TorchPathSet(valid)
+            tests_set = TorchPathSet(tests)
+            return  train_set, valid_set, tests_set
+        if category is None:
+            category = list(self._casep.iterdir())
+        else:
+            category = [y for x in category for y in self._casep.iterdir() if x in y.name]
+        train = {'x':[], 'y':[]}
+        valid = {'x':[], 'y':[]}
+        tests = {'x':[], 'y':[]}
+        for ind, f in enumerate(category):
+            files = list(f.glob('**/*.*'))
+            samps, labels = self._marker(files)
+            assert len(samps) == len(labels) != 0
+            data = list(zip(samps, labels))
+            random.shuffle(data)
+            samps, labels = zip(*data)
+            samp_lens = len(samps)
+            print(f'load {category[ind]}, {samp_lens} samps')
+            train_coe = round((coe[0]/sum(coe))*samp_lens)
+            valid_coe = round((coe[1]/sum(coe))*samp_lens)
+            tests_coe = samp_lens - train_coe - valid_coe
+            train['x'].extend(samps[:train_coe])
+            train['y'].extend(labels[:train_coe])
+            valid['x'].extend(samps[train_coe:train_coe+valid_coe])
+            valid['y'].extend(labels[train_coe:train_coe+valid_coe])
+            tests['x'].extend(samps[-tests_coe:])
+            tests['y'].extend(labels[-tests_coe:])
+        train_cache = self._cookp / 'train'
+        train_cache.mkdir(parents=True, exist_ok=True)
+        train['x'], train['l'] = self._processor(train['x'], train_cache)
+        train['y'] = np.array(train['y'])
+        valid_cache = self._cookp / 'valid'
+        valid_cache.mkdir(parents=True, exist_ok=True)
+        valid['x'], valid['l'] = self._processor(valid['x'], valid_cache)
+        valid['y'] = np.array(valid['y'])
+        tests_cache = self._cookp / 'valid'
+        tests_cache .mkdir(parents=True, exist_ok=True)
+        tests['x'], tests['l'] = self._processor(tests['x'], tests_cache)
+        tests['y'] = np.array(tests['y'])
+        with open(self._rootp / 'train.pkl', 'wb') as f:
+            pickle.dump(train, f)
+        with open(self._rootp / 'valid.pkl', 'wb') as f:
+            pickle.dump(valid, f)
+        with open(self._rootp / 'tests.pkl', 'wb') as f:
+            pickle.dump(tests, f)
+        train_set = TorchPathSet(train)
+        valid_set = TorchPathSet(valid)
+        tests_set = TorchPathSet(tests)
+        return train_set, valid_set, tests_set
 
     @staticmethod
     def _marker(files):
         asts = []
         labels = []
         for file in files:
+            if re.match(r'^CWE.*\.(c|cpp)$', file.name) is None:
+                continue
             ast = loader_cc(str(file))
-            pr = ASTParser(ast)
-            decl = pr.walker(
-                lambda x: x.is_definition and x.kind == 'FUNCTION_DECL')
+            decl = [x for x in ast.walk() if x.is_definition and x.kind == 'FUNCTION_DECL']
             for node in decl:
                 if 'main' in str(node.data):
                     continue
-                pr = ASTParser(node)
-                node_list = pr.walker()
+                node_list = list(node.walk())
                 if len(node_list) < 5:
                     continue
-                labels.append(0 if 'good' in str(node.data) else 1)
+                labels.append(1 if 'bad' in str(node.data) else 0)
                 asts.append(node)
         assert len(asts) == len(labels)
         return asts, labels
-
-    def _cache(self, X, Y, train=True):
-        cachep = self._rootp / 'cache'
-        cachep.mkdir(parents=True, exist_ok=True)
-        datap = cachep / 'train' if train else cachep / 'valid'
-        if datap.exists():
-            # return datap
-            shutil.rmtree(str(datap))
-        datap.mkdir(parents=True, exist_ok=True)
-        max_len = max([len(x) for x in X])
-        print(f'max length: {max_len}')
-        for i, x in enumerate(X):
-            tmp = x[:]
-            pad = np.zeros(((max_len-len(x)), len(x[0]))).tolist()
-            tmp.extend(pad)
-            with open(str(datap / f'{i}.p'), 'wb') as f:
-                pickle.dump(tmp, f, protocol=pickle.HIGHEST_PROTOCOL)
-        with open(str(datap / 'Y.p'), 'wb') as f:
-            pickle.dump(Y[:], f, protocol=pickle.HIGHEST_PROTOCOL)
-        return datap
-
-    def _cache2(self, X, Y, train=True):
-        cachep = self._rootp / 'cache'
-        cachep.mkdir(parents=True, exist_ok=True)
-        datap = cachep / 'train' if train else cachep / 'valid'
-        if datap.exists():
-            # return datap
-            shutil.rmtree(str(datap))
-        datap.mkdir(parents=True, exist_ok=True)
-        for i, x in enumerate(X):
-            tmp = x[:]
-            if len(tmp) < 433:
-                pad = np.zeros(((433-len(tmp)), len(tmp[0]))).tolist()
-                tmp.extend(pad)
-            else:
-                tmp = x[:433]
-            with open(str(datap / f'{i}.p'), 'wb') as f:
-                pickle.dump(tmp, f, protocol=pickle.HIGHEST_PROTOCOL)
-        with open(str(datap / 'Y.p'), 'wb') as f:
-            pickle.dump(Y[:], f, protocol=pickle.HIGHEST_PROTOCOL)
-        return datap

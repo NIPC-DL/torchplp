@@ -36,31 +36,31 @@ class Dataset(object):
 class TorchSet(data.Dataset):
     """The Pytorch Dataset"""
 
-    def __init__(self, X, Y):
-        self._X = torch.Tensor(self.padding(X)).float()
-        self._Y = torch.Tensor(Y).long()
+    def __init__(self, X, L, Y):
+        self._X = torch.from_numpy(X).float()
+        self._L = torch.LongTensor(L)
+        self._Y = torch.from_numpy(Y).long()
 
     def __getitem__(self, index):
-        return self._X[index], self._Y[index]
+        return self._X[index], self._L[index], self._Y[index]
 
     def __len__(self):
         return len(self._X)
 
 class TorchPathSet(data.Dataset):
-    def __init__(self, path):
-        self._P = path
-        with open(str(path / 'Y.p'), 'rb') as f:
-            self._Y = pickle.load(f)
+    def __init__(self, base):
+        self._x = base['x']
+        self._l = torch.from_numpy(base['l']).long()
+        self._y = torch.from_numpy(base['y']).long()
+        assert len(self._x) == len(self._l) == len(self._y) != 0
 
     def __getitem__(self, index):
-        y = self._Y[index]
-        with open(str(self._P / f'{index}.p'), 'rb') as f:
-            x = pickle.load(f)
-        x = torch.as_tensor(x).float()
-        y = torch.Tensor([1.0, 0.0]).float() if int(y) == 0 else torch.Tensor([0.0,
-            1.0]).float()
-        # y = torch.Tensor([y]).long()
-        return x, y
+        x = self._x[index]
+        x = np.load(x)
+        x = torch.from_numpy(x).float()
+        l = self._l[index]
+        y = self._y[index]
+        return x, l ,y
 
     def __len__(self):
-        return len(self._Y)
+        return len(self._x)

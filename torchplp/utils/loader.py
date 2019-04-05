@@ -12,7 +12,7 @@ from .astree import ASTNode, ASTKind
 from tempfile import NamedTemporaryFile
 
 
-def packer_cc(root):
+def packer_cc(root, filename):
     """Transform clang ast to torchplp ast
 
     Args:
@@ -30,7 +30,11 @@ def packer_cc(root):
     ast.kind = ASTKind(root.kind, 'cc')
     ast.is_definition = root.is_definition()
     for c in root.get_children():
-        child = packer_cc(c)
+        if c.location.file is None:
+            continue
+        if c.location.file.name != filename:
+            continue
+        child = packer_cc(c, filename)
         child.parent = ast
         ast.children.append(child)
     return ast
@@ -56,7 +60,7 @@ def loader_cc(data):
             tu = index.parse(tf.name)
     else:
         tu = index.parse(data)
-    return packer_cc(tu.cursor)
+    return packer_cc(tu.cursor, tu.cursor.spelling)
 
 
 def loader_cgd(path, spliter='-'*20):
