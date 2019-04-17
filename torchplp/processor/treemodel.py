@@ -18,7 +18,6 @@ class Treemodel(object):
 
     def __call__(self, nodes, cache=None):
         samps = []
-        samp_lens = []
         assert len(nodes) != 0
         for node in nodes:
             x = F.standardize(node)

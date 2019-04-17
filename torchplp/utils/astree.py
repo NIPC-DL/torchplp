@@ -7,6 +7,7 @@ astree.py - Abstract Syntax Tree Structure
 :License: MIT
 """
 from collections import deque
+from graphviz import Digraph
 
 
 class ASTKind:
@@ -136,5 +137,14 @@ class ASTNode:
             yield node
 
     def graph(self):
-        for node in self.walk():
-            print(node.data, node.kind)
+        dot = Digraph()
+        queue = deque()
+        queue.append(self)
+        while queue:
+            node = queue.popleft()
+            dot.node(node.id, f'{node.data}\n{node.kind}')
+            for child in node.children:
+                dot.node(child.id, f'{child.data}\n{child.kind}')
+                dot.edge(node.id, child.id)
+                queue.appendleft(child)
+        return dot

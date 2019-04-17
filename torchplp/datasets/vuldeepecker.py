@@ -15,11 +15,9 @@ import pickle
 import torch
 import numpy as np
 from torch.utils.data import DataLoader
-from .utils import download_file, git_clone_file
-from .constants import DOWNLOAD_URL
 from .models import Dataset, TorchSet
-from torchplp.processor import TextModel, Word2Vec
 from torchplp.utils.loader import loader_cgd
+from torchplp.utils.utils import git_clone_file
 
 
 class VulDeePecker(Dataset):
@@ -44,7 +42,7 @@ class VulDeePecker(Dataset):
 
     def download(self):
         """Download VulDeePecker Datasets from their Github Repo"""
-        url = DOWNLOAD_URL['vuldeepecker']
+        url = 'https://github.com/CGCL-codes/VulDeePecker.git'
         print(f'git clone from {url}')
         clone_path = self._rawp / 'VulDeePecker.git'
         if not clone_path.exists():

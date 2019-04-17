@@ -53,3 +53,8 @@ def padding(data, max_length, word_size):
         real_length = max_length
     assert data.shape[0] == max_length
     return data, real_length
+
+def tree_slicing(root):
+    for node in root.walk():
+        if node.kind == 'CALL_EXPR':
+            pass

@@ -12,7 +12,7 @@ from .astree import ASTNode, ASTKind
 from tempfile import NamedTemporaryFile
 
 
-def packer_cc(root, filename):
+def packer_cc(root, filename, filt=True):
     """Transform clang ast to torchplp ast
 
     Args:
@@ -30,17 +30,17 @@ def packer_cc(root, filename):
     ast.kind = ASTKind(root.kind, 'cc')
     ast.is_definition = root.is_definition()
     for c in root.get_children():
-        if c.location.file is None:
-            continue
-        if c.location.file.name != filename:
-            continue
+        # if c.location.file is None:
+        #     continue
+        # if c.location.file.name != filename:
+        #     continue
         child = packer_cc(c, filename)
         child.parent = ast
         ast.children.append(child)
     return ast
 
 
-def loader_cc(data):
+def loader_cc(data, filt=True):
     """Load c/c++ data (file or list of codes), return entry node
 
     This function load c/c++ source code file from path, the file can be
@@ -60,7 +60,7 @@ def loader_cc(data):
             tu = index.parse(tf.name)
     else:
         tu = index.parse(data)
-    return packer_cc(tu.cursor, tu.cursor.spelling)
+    return packer_cc(tu.cursor, tu.cursor.spelling, filt)
 
 
 def loader_cgd(path, spliter='-'*20):

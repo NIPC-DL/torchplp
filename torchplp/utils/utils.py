@@ -38,7 +38,6 @@ def download_file(url, path, proxy=None):
             if chunk:
                 f.write(chunk)
 
-
 def git_clone_file(url, path):
     """git clone repo from url
 

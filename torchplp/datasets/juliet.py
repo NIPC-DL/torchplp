@@ -61,68 +61,83 @@ class Juliet(Dataset):
                     f"Path {str(self._rawp / 'testcases')} exist, download cancel."
                     )
 
-            def process(self, cwep):
-                pass
-
     def load(self, category=None, coe=None, cache=True):
         if (self._rootp / 'train.pkl').exists():
             with open(self._rootp / 'train.pkl', 'rb') as f:
-                train = pickle.load(f)
+                train_x, train_l, train_y = pickle.load(f)
+                print(sum(train_y))
+            train_set = TorchPathSet(train_x, train_l, train_y)
+        if (self._rootp / 'valid.pkl').exists():
             with open(self._rootp / 'valid.pkl', 'rb') as f:
-                valid = pickle.load(f)
+                valid_x, valid_l, valid_y = pickle.load(f)
+                print(sum(valid_y))
+            valid_set = TorchPathSet(valid_x, valid_l, valid_y)
+        if (self._rootp / 'tests.pkl').exists():
             with open(self._rootp / 'tests.pkl', 'rb') as f:
-                tests = pickle.load(f)
-            train_set = TorchPathSet(train)
-            valid_set = TorchPathSet(valid)
-            tests_set = TorchPathSet(tests)
-            return  train_set, valid_set, tests_set
+                tests_x, tests_l, tests_y = pickle.load(f)
+                print(sum(tests_y))
+            tests_set = TorchPathSet(tests_x, tests_l, tests_y)
+        if (self._rootp / 'train.pkl').exists():
+            return train_set, valid_set, tests_set
         if category is None:
             category = list(self._casep.iterdir())
         else:
             category = [y for x in category for y in self._casep.iterdir() if x in y.name]
-        train = {'x':[], 'y':[]}
-        valid = {'x':[], 'y':[]}
-        tests = {'x':[], 'y':[]}
+        train = []
+        valid = []
+        tests = []
         for ind, f in enumerate(category):
             files = list(f.glob('**/*.*'))
-            samps, labels = self._marker(files)
-            assert len(samps) == len(labels) != 0
-            data = list(zip(samps, labels))
-            random.shuffle(data)
-            samps, labels = zip(*data)
-            samp_lens = len(samps)
-            print(f'load {category[ind]}, {samp_lens} samps')
-            train_coe = round((coe[0]/sum(coe))*samp_lens)
-            valid_coe = round((coe[1]/sum(coe))*samp_lens)
-            tests_coe = samp_lens - train_coe - valid_coe
-            train['x'].extend(samps[:train_coe])
-            train['y'].extend(labels[:train_coe])
-            valid['x'].extend(samps[train_coe:train_coe+valid_coe])
-            valid['y'].extend(labels[train_coe:train_coe+valid_coe])
-            tests['x'].extend(samps[-tests_coe:])
-            tests['y'].extend(labels[-tests_coe:])
+            random.shuffle(files)
+            file_num = len(files)
+            print(f'load {category[ind]}, {file_num} samps')
+            train_coe = round((coe[0]/sum(coe))*file_num)
+            valid_coe = round((coe[1]/sum(coe))*file_num)
+            tests_coe = file_num - train_coe - valid_coe
+            train.extend(files[:train_coe])
+            valid.extend(files[train_coe:train_coe+valid_coe])
+            tests.extend(files[-tests_coe:])
         train_cache = self._cookp / 'train'
         train_cache.mkdir(parents=True, exist_ok=True)
-        train['x'], train['l'] = self._processor(train['x'], train_cache)
-        train['y'] = np.array(train['y'])
+        train_samps, train_labels = self._marker(train)
+        train_x, train_l = self._processor(train_samps, train_cache)
+        train_y = np.array(train_labels)
         valid_cache = self._cookp / 'valid'
         valid_cache.mkdir(parents=True, exist_ok=True)
-        valid['x'], valid['l'] = self._processor(valid['x'], valid_cache)
-        valid['y'] = np.array(valid['y'])
-        tests_cache = self._cookp / 'valid'
+        valid_samps, valid_labels = self._marker(valid)
+        valid_x, valid_l = self._processor(valid_samps, valid_cache)
+        valid_y = np.array(valid_labels)
+        tests_cache = self._cookp / 'tests'
         tests_cache .mkdir(parents=True, exist_ok=True)
-        tests['x'], tests['l'] = self._processor(tests['x'], tests_cache)
-        tests['y'] = np.array(tests['y'])
+        tests_samps, tests_labels = self._marker(tests)
+        tests_x, tests_l = self._processor(tests_samps, tests_cache)
+        tests_y = np.array(tests_labels)
         with open(self._rootp / 'train.pkl', 'wb') as f:
-            pickle.dump(train, f)
+            pickle.dump((train_x, train_l, train_y), f)
         with open(self._rootp / 'valid.pkl', 'wb') as f:
-            pickle.dump(valid, f)
+            pickle.dump((valid_x, valid_l, valid_y), f)
         with open(self._rootp / 'tests.pkl', 'wb') as f:
-            pickle.dump(tests, f)
-        train_set = TorchPathSet(train)
-        valid_set = TorchPathSet(valid)
-        tests_set = TorchPathSet(tests)
+            pickle.dump((tests_x, tests_l, tests_y), f)
+        train_set = TorchPathSet(train_x, train_l, train_y)
+        valid_set = TorchPathSet(valid_x, valid_l, valid_y)
+        tests_set = TorchPathSet(tests_x, tests_l, tests_y)
         return train_set, valid_set, tests_set
+
+    def _select(self, category):
+        category = [y for x in category for y in self._casep.iterdir() if x in y.stem][0]
+        filt = lambda x: 'CWE' in x.stem and x.suffix in ['.c', '.cpp']
+        files = [f for f in category.glob('**/*.*') if filt(f)]
+        random.shuffle(files)
+        f = files[0]
+        print(f)
+        asts, _ = self._marker([f])
+        print(len(asts))
+        for decl in asts:
+            dot = decl.graph()
+            dot.render('tmp.gv', view=True)
+            for n in decl.walk():
+                print(f'{n.data}-{n.kind}')
+            break
 
     @staticmethod
     def _marker(files):
@@ -136,10 +151,9 @@ class Juliet(Dataset):
             for node in decl:
                 if 'main' in str(node.data):
                     continue
-                node_list = list(node.walk())
-                if len(node_list) < 5:
+                if str(node.data) == 'good':
                     continue
-                labels.append(1 if 'bad' in str(node.data) else 0)
+                labels.append(1.0 if 'bad' in str(node.data) else 0.0)
                 asts.append(node)
         assert len(asts) == len(labels)
         return asts, labels

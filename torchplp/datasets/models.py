@@ -13,6 +13,12 @@ import numpy as np
 import torch
 from torch.utils import data
 
+def l2o(y):
+    y_onehot = torch.FloatTensor(1, 2)
+    y_onehot.zero_()
+    y_onehot.scatter_(1, y, 1)
+    return y_onehot
+
 
 class Dataset(object):
     """Upper dataset class"""
@@ -48,10 +54,10 @@ class TorchSet(data.Dataset):
         return len(self._X)
 
 class TorchPathSet(data.Dataset):
-    def __init__(self, base):
-        self._x = base['x']
-        self._l = torch.from_numpy(base['l']).long()
-        self._y = torch.from_numpy(base['y']).long()
+    def __init__(self, x, l, y):
+        self._x = x
+        self._l = torch.from_numpy(l).long()
+        self._y = torch.from_numpy(y).long()
         assert len(self._x) == len(self._l) == len(self._y) != 0
 
     def __getitem__(self, index):
@@ -64,3 +70,25 @@ class TorchPathSet(data.Dataset):
 
     def __len__(self):
         return len(self._x)
+
+class TorchSet2(data.Dataset):
+    def __init__(self, samps, labels, processor=None):
+        if processor is not None:
+            paths, lens = processor(samps)
+            self._x = paths
+            self._l = torch.LongTensor(lens)
+        else:
+            self._x = samps
+        self._y = torch.LongTensor(labels)
+
+    def __getitem__(self, index):
+        x = self._x[index]
+        x = np.load(x)
+        x = torch.from_numpy(x).float()
+        l = self._l[index]
+        y = self._y[index]
+        return x, l ,y
+
+    def __len__(self):
+        return len(self._y)
+

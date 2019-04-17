@@ -37,8 +37,9 @@ class TextModel(Processor):
 
     """
 
-    def __init__(self, embedder):
+    def __init__(self, embedder, length):
         self._embedder = embedder
+        self._length = length
 
     def standarlize(self, code):
         """
@@ -88,6 +89,16 @@ class TextModel(Processor):
         vr = [self._embedder[word].tolist() for line in sr for word in line]
         return vr
 
+    def padding(self, vr):
+        for v in vr:
+            if len(v) < self._length:
+                pad = [np.zeros(self._embedder.vector_size).tolist for i in range(self._length-len(v))]
+                v.extend(pad)
+            else:
+                v = v[:self._length]
+        return vr
+
+
     def process(self, data, pretrain=False):
         """Process source code and output their vector representation"""
         if isinstance(data[0], str):
@@ -98,6 +109,7 @@ class TextModel(Processor):
             if not pretrain:
                 self._pretrain(sr)
             vr = [self.vectorlize(x) for x in sr]
+            vr = padding(vr)
         return vr
 
     def _pretrain(self, data):
