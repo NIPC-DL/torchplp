@@ -7,8 +7,9 @@ utils.py - The collection of utils
 :License: MIT
 """
 import os
-import requests
+import random
 import torch
+import requests
 from subprocess import call
 
 
@@ -58,3 +59,20 @@ def i2h(labels, classes):
     y_onehot.zero_()
     y_onehot.scatter_(1, y, 1)
     return y_onehot
+
+def split_by_category(category, ratio, shuffle=True):
+    if len(ratio) != 3:
+        raise ValueError(f'ratio must include three int numbers')
+    train, valid, tests = list(), list(), list()
+    for samples in category:
+        sample_lens = len(samples)
+        train_ratio = round(sample_lens * (ratio[0]/sum(ratio)))
+        tests_ratio = round(sample_lens * (ratio[2]/sum(ratio)))
+        valid_ratio = sample_lens - train_ratio - tests_ratio
+        if shuffle:
+            random.shuffle(samples)
+        train.extend(samples[:train_ratio])
+        valid.extend(samples[train_ratio:train_ratio+valid_ratio])
+        tests.extend(samples[-tests_ratio:])
+    return train, valid, tests
+

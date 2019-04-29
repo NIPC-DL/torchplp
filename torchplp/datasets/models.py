@@ -6,11 +6,9 @@ models.py - The covec dataset model defination
 :Email: verf@protonmail.com
 :License: MIT
 """
-import os
 import pathlib
-import pickle
-import numpy as np
 import torch
+import numpy as np
 from torch.utils import data
 
 def l2o(y):
@@ -24,20 +22,15 @@ class Dataset(object):
     """Upper dataset class"""
 
     def __init__(self, root):
-        # expand given path
-        self._rootp = pathlib.Path(root).expanduser()
-        # create unique directory in datapath to save datasets
-        self._rootp = self._rootp / str(self)
-        self._rootp.mkdir(parents=True, exist_ok=True)
-        # create raw path to save raw datasets
-        self._rawp = self._rootp / 'raw'
-        self._rawp.mkdir(parents=True, exist_ok=True)
-        # create cooked path to save processed datasets (vector data)
-        self._cookp = self._rootp / 'cook'
-        self._cookp.mkdir(parents=True, exist_ok=True)
+        # transform given path to pathlib object
+        root = pathlib.Path(str(root)).expanduser()
+        # create unique directory to save datasets
+        self._root = root / str(self)
+        self._root.mkdir(parents=True, exist_ok=True)
 
     def __repr__(self):
         return self.__class__.__name__
+
 
 class TorchSet(data.Dataset):
     """The Pytorch Dataset"""

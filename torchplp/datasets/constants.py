@@ -6,7 +6,10 @@ constants.py - The constants used for datasets
 :Email: verf@protonmail.com
 :License: MIT
 """
-
+# Download URL for Juliet Test Suite
+JULIET_URL = 'https://samate.nist.gov/SRD/testsuites/juliet/Juliet_Test_Suite_v1.3_for_C_Cpp.zip'
+# Download URL for SYSEVR
+SYSEVR_URL = 'https://github.com/SySeVR/SySeVR.git'
 # AE: Arithmetic Expression, AF: API Function Call, AU: Array Usage, PU: Pointer Usage
 JULIET_CATEGORY = {
     "AE": [
