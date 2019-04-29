@@ -69,11 +69,3 @@ class Vectorlize(Processor):
 
     def __call__(self, data):
         return F.vectorlize(data, self._embedder)
-
-class Padding(Processor):
-    def __init__(self, max_length, word_size):
-        self.max_length = max_length
-        self.word_size = word_size
-
-    def __call__(self, data):
-        return F.padding(data, self.max_length, self.word_size)
