@@ -10,6 +10,7 @@ import os
 import random
 import torch
 import requests
+import numpy as np
 from subprocess import call
 
 
@@ -52,27 +53,45 @@ def git_clone_file(url, path):
     else:
         raise SystemError("git not found, please install git first.")
 
-def i2h(labels, classes):
-    """convert int to one-hot"""
-    y = torch.LongTensor(labels)
-    y_onehot = torch.FloatTensor(len(labels), classes)
-    y_onehot.zero_()
-    y_onehot.scatter_(1, y, 1)
-    return y_onehot
+def split_from_dict(dict_, ratio, shuffle=True):
+    """split dict dataset into train, valid and tests set
 
-def split_by_category(category, ratio, shuffle=True):
+    Args:
+        dict_ (dict): dataset in dict
+        ratio (list): list of ratio for train, valid and tests split
+        shuffle (bool): shuffle or not
+    
+    """
     if len(ratio) != 3:
         raise ValueError(f'ratio must include three int numbers')
-    train, valid, tests = list(), list(), list()
-    for samples in category:
+    train = {'x':list(), 'y':list()}
+    valid = {'x':list(), 'y':list()}
+    tests = {'x':list(), 'y':list()}
+    for _, samples in dict_.items():
         sample_lens = len(samples)
         train_ratio = round(sample_lens * (ratio[0]/sum(ratio)))
         tests_ratio = round(sample_lens * (ratio[2]/sum(ratio)))
         valid_ratio = sample_lens - train_ratio - tests_ratio
         if shuffle:
             random.shuffle(samples)
-        train.extend(samples[:train_ratio])
-        valid.extend(samples[train_ratio:train_ratio+valid_ratio])
-        tests.extend(samples[-tests_ratio:])
+        x, y = zip(*samples)
+        train['x'].extend(x[:train_ratio])
+        train['y'].extend(y[:train_ratio])
+        valid['x'].extend(x[train_ratio:train_ratio+valid_ratio])
+        valid['y'].extend(y[train_ratio:train_ratio+valid_ratio])
+        tests['x'].extend(x[-tests_ratio:])
+        tests['y'].extend(y[-tests_ratio:])
     return train, valid, tests
+
+def truncate_and_padding(data, length, word_size):
+    """truncate and padding data"""
+    if not isinstance(data, np.ndarray):
+        data = np.asarray(data)
+    real_length = len(data)
+    if real_length < length:
+        pad = np.zeros((length-real_length, word_size))
+        data = np.concatenate((data, pad), axis=0)
+    else:
+        data = data[:length]
+    return data
 
