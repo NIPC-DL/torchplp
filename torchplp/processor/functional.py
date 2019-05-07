@@ -16,7 +16,7 @@ def standardize(root):
     for node in root.walk():
         if node.kind == 'VAR_DECL':
             var_names.append(node.data)
-        if node.kind == 'FUNCTION_DECL':
+        if 'CWE' in node.data or 'good' in node.data and node.data not in fun_names:
             fun_names.append(node.data)
     for node in root.walk():
         if node.data in var_names:

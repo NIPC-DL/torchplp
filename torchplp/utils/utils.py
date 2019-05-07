@@ -53,7 +53,7 @@ def git_clone_file(url, path):
     else:
         raise SystemError("git not found, please install git first.")
 
-def split_from_dict(dict_, ratio, shuffle=True):
+def spliter(samps, ratio, shuffle=True):
     """split dict dataset into train, valid and tests set
 
     Args:
@@ -67,7 +67,7 @@ def split_from_dict(dict_, ratio, shuffle=True):
     train = {'x':list(), 'y':list()}
     valid = {'x':list(), 'y':list()}
     tests = {'x':list(), 'y':list()}
-    for _, samples in dict_.items():
+    for _, samples in samps:
         sample_lens = len(samples)
         train_ratio = round(sample_lens * (ratio[0]/sum(ratio)))
         tests_ratio = round(sample_lens * (ratio[2]/sum(ratio)))

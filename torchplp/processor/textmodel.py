@@ -84,19 +84,14 @@ class TextModel(object):
 
     """
 
-    def __init__(self, embedder=None):
+    def __init__(self, embedder=None, pretrain=False):
         self._embedder = embedder
+        self._pretrain = pretrain
 
     def __call__(self, data):
         sr = [standarlize(x) for x in data]
-        if self._embedder is None:
+        if not self._pretrain:
             sent = [sum(x, []) for x in sr]
-            self._embedder = Word2Vec(
-                    size=100,
-                    min_count=0,
-                    workers=cpu_count(),
-                    sg=1
-                )
             self._embedder.train(sent)
         vr = [vectorlize(self._embedder, x) for x in sr]
         return vr

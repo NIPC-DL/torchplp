@@ -9,10 +9,37 @@ juliet.py - Juliet Test Suite (https://samate.nist.gov/SRD/testsuite.php)
 import re
 import pickle
 import zipfile
+from concurrent import futures
 from torchplp.utils.loader import loader_cc
 from torchplp.utils.utils import download_file
 from .models import Dataset
 from .constants import JULIET_URL
+
+def tag_file(file):
+    """extract function from file and tag it by it's name"""
+    samples = list()
+    ast = loader_cc(str(file))
+    decl = [x for x in ast.walk() if x.is_definition and x.kind == 'FUNCTION_DECL']
+    for node in decl:
+        if 'main' in str(node.data):
+            continue
+        if str(node.data) == 'good':
+            continue
+        if str(node.data) == 'bad':
+            continue
+        if len(list(node.walk())) < 6:
+            continue
+        label = 1 if 'bad' in str(node.data) else 0
+        samples.append([node, label])
+    return samples
+
+def tag_all_files(files):
+    """tag all files"""
+    all_samples = list()
+    with futures.ProcessPoolExecutor() as pool:
+        for samples in pool.map(tag_file, files):
+            all_samples.extend(samples)
+    return all_samples
 
 class Juliet(Dataset):
     """Juliet Test Suite <https://samate.nist.gov/SRD/testsuite.php>
@@ -65,39 +92,10 @@ class Juliet(Dataset):
             print(f"Dataset exist, download cancel")
 
     def load(self, category=None):
-        cate_samps = dict()
         for c in category:
-            cache_file = self._cache / f'{c}.pkl'
-            if cache_file.exists():
-                print(f'load {c} from cache')
-                with open(str(cache_file), 'rb') as f:
-                    samples = pickle.load(f)
-            else:
-                print(f'load {c}')
-                samples = list()
-                for ind, f in enumerate(self._category[c]):
-                    samples.extend(self._tag_from_file(f))
-                    print(f'{ind*100/len(self._category[c]):.4f}%', end='\r')
-                print('\n')
-                with open(str(cache_file), 'wb') as f:
-                    pickle.dump(samples, f)
-            cate_samps[c] = samples
-        return cate_samps
-
-
-    @staticmethod
-    def _tag_from_file(file):
-        samples = list()
-        ast = loader_cc(str(file))
-        decl = [x for x in ast.walk() if x.is_definition and x.kind == 'FUNCTION_DECL']
-        for node in decl:
-            if 'main' in str(node.data):
-                continue
-            if str(node.data) == 'good':
-                continue
-            label = 1 if 'bad' in str(node.data) else 0
-            samples.append((node, label))
-        return samples
+            files = self._category[c]
+            samples = tag_all_files(files)
+            yield c, samples
 
     @staticmethod
     def iscwe(name):
