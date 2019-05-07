@@ -8,10 +8,8 @@ __init__.py - init of covec.datasets
 """
 from .juliet import Juliet
 from .sysevr import SySeVR
-from .vuldeepecker import VulDeePecker
 
 __all__ = [
     'Juliet',
     'SySeVR',
-    'VulDeePecker',
 ]

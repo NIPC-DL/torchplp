@@ -86,6 +86,7 @@ def loader_cgd(path, spliter='-'*20):
                    continue 
                 cgd = frag[1:-1]
                 label = int(frag[-1])
-                samples.append((cgd, label))
+                if label in [0, 1]:
+                    samples.append((cgd, label))
                 frag = list()
     return samples
