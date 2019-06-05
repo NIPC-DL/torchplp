@@ -26,7 +26,7 @@ def code_split(line):
     return list(
         filter(lambda x: x and x not in [' ', ''], re.split(r'(\W|\s)', line)))
 
-def standarlize(code):
+def standardize(code):
     """
     This function replace the user-defined variable and function name
     to fixed name such as var0, var1 and fun0, fun1, which we called it
@@ -61,7 +61,7 @@ def standarlize(code):
         sr.append(tokens)
     return sr
 
-def vectorlize(embedder, sr):
+def vectorlize(sr, embedder):
     """
     This function converts the standarlized codes into a vector representation 
     through a words model.
@@ -74,7 +74,7 @@ def vectorlize(embedder, sr):
 
     """
     vr = [embedder[word].tolist() for line in sr for word in line]
-    return np.array(vr)
+    return np.asarray(vr)
 
 class TextModel(object):
     """
@@ -89,9 +89,9 @@ class TextModel(object):
         self._pretrain = pretrain
 
     def __call__(self, data):
-        sr = [standarlize(x) for x in data]
+        sr = [standardize(x) for x in data]
         if not self._pretrain:
             sent = [sum(x, []) for x in sr]
             self._embedder.train(sent)
-        vr = [vectorlize(self._embedder, x) for x in sr]
+        vr = [vectorlize(x, self._embedder) for x in sr]
         return vr

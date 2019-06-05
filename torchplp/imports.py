@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-This subpackage is the collection of some usefully utils for covec
+imports.py - Contains common imports
 
 :Author: Verf
 :Email: verf@protonmail.com
 :License: MIT
 """
+import torch
+import torch.nn as nn

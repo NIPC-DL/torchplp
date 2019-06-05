@@ -11,7 +11,7 @@ from .astree import ASTNode, ASTKind
 from tempfile import NamedTemporaryFile
 
 
-def packer_cc(root, filename, filt=True):
+def packer_cc(root, filename):
     """Transform clang ast to torchplp ast
 
     Args:
@@ -19,6 +19,7 @@ def packer_cc(root, filename, filt=True):
     
     Return:
         ast (torchplp.utils.ASTNode): torchplp ast node
+
     """
     ast = ASTNode()
     ast.id = root.hash
@@ -29,13 +30,15 @@ def packer_cc(root, filename, filt=True):
     ast.kind = ASTKind(root.kind, 'cc')
     ast.is_definition = root.is_definition()
     for c in root.get_children():
+        if str(c.location.file) != filename:
+            continue
         child = packer_cc(c, filename)
         child.parent = ast
         ast.children.append(child)
     return ast
 
 
-def loader_cc(data, filt=True):
+def loader_cc(data, args=None):
     """Load c/c++ data (file or list of codes), return entry node
 
     This function load c/c++ source code file from path, the file can be
@@ -52,10 +55,12 @@ def loader_cc(data, filt=True):
         with NamedTemporaryFile('w+t', suffix='.cpp') as tf:
             tf.write('\n'.join(data))
             tf.seek(0)
-            tu = index.parse(tf.name)
+            tu = index.parse(tf.name, args)
+    elif isinstance(data, str):
+        tu = index.parse(data, args)
     else:
-        tu = index.parse(data)
-    return packer_cc(tu.cursor, tu.cursor.spelling, filt)
+        print(f'{data} must be a file path or list of code')
+    return packer_cc(tu.cursor, str(tu.cursor.spelling))
 
 
 def loader_cgd(path, spliter='-'*20):
@@ -76,6 +81,7 @@ def loader_cgd(path, spliter='-'*20):
 
     """
     samples = list()
+    # labels = list()
     with open(path) as f:
         frag = list()
         for line in f:
@@ -85,8 +91,7 @@ def loader_cgd(path, spliter='-'*20):
                 if len(frag) < 3:
                    continue 
                 cgd = frag[1:-1]
-                label = int(frag[-1])
-                if label in [0, 1]:
-                    samples.append((cgd, label))
+                if frag[-1] in ['0', '1']:
+                    samples.append((cgd, int(frag[-1])))
                 frag = list()
     return samples

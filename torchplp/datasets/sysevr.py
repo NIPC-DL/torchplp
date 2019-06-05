@@ -50,6 +50,7 @@ class SySeVR(Dataset):
             print(f'{str(clone_path)} exist, download cancel')
 
     def load(self, category=None):
-        for c in category:
-            samples = loader_cgd(str(self._category[c]))
-            yield c, samples
+        for cate in category:
+            samples = loader_cgd(str(self._category[cate]))
+            assert len(samples) != 0
+            yield cate, samples

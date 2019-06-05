@@ -133,7 +133,7 @@ class ASTNode:
                 if method.lower() == 'dfs':
                     queue.appendleft(child)
                 else:
-                    queue.append(self)
+                    queue.append(child)
             yield node
 
     def graph(self):

@@ -6,15 +6,17 @@ treemodel.py - transform AST into vectors
 :Email: verf@protonmail.com
 :License: MIT
 """
+import numpy as np
+from torchplp.utils.astree import ASTNode
 
 def standardize(root):
     var_names = []
     fun_names = []
-    root.data = 'func_name'
+    root.data = 'func_root'
     for node in root.walk():
         if node.kind == 'VAR_DECL':
             var_names.append(node.data)
-        if 'CWE' in node.data or 'good' in node.data and node.data not in fun_names:
+        if 'CWE' in node.data and node.data not in fun_names:
             fun_names.append(node.data)
     for node in root.walk():
         if node.data in var_names:
@@ -26,18 +28,21 @@ def standardize(root):
 def tree2seq(data, path='DFS'):
     """transform tree structrue to sequence"""
     assert isinstance(data, ASTNode)
-    return list(data.walk(path))
+    sample = list()
+    for node in data.walk(path):
+        sample.append([node.data, str(node.kind)])
+    return sample
 
 def vectorlize(data, embedder):
     """transform sequence data to its vector representation"""
     vr = []
     for node in data:
         try:
-            vec = embedder[node.data] if node.data else embedder[node.kind]
+            vec = embedder[node[0]] if bool(node[0]) else embedder[node[1]]
         except Exception:
             vec = np.zeros(embedder.vector_size)
         vr.append(vec.tolist())
-    vr = np.array(vr)
+    vr = np.asarray(vr)
     return vr
 
 class TreeModel(object):

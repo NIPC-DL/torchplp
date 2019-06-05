@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This subpackage is the collection of some usefully utils for covec
+core.py - Contains common functions and declarations
 
 :Author: Verf
 :Email: verf@protonmail.com

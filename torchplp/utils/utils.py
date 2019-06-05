@@ -49,15 +49,15 @@ def git_clone_file(url, path):
 
     """
     if os.path.exists('/usr/bin/git') or os.path.exists('/bin/git'):
-        call(['git', 'clone', url, path])
+        call(['git', 'clone', url, str(path)])
     else:
         raise SystemError("git not found, please install git first.")
 
-def spliter(samps, ratio, shuffle=True):
+def spliter(data_dict, ratio=[6,1,1], shuffle=True):
     """split dict dataset into train, valid and tests set
 
     Args:
-        dict_ (dict): dataset in dict
+        data_dict (dict): dataset in dict
         ratio (list): list of ratio for train, valid and tests split
         shuffle (bool): shuffle or not
     
@@ -67,14 +67,15 @@ def spliter(samps, ratio, shuffle=True):
     train = {'x':list(), 'y':list()}
     valid = {'x':list(), 'y':list()}
     tests = {'x':list(), 'y':list()}
-    for _, samples in samps:
-        sample_lens = len(samples)
-        train_ratio = round(sample_lens * (ratio[0]/sum(ratio)))
-        tests_ratio = round(sample_lens * (ratio[2]/sum(ratio)))
-        valid_ratio = sample_lens - train_ratio - tests_ratio
+    for _, [samples, labels] in data_dict.items():
+        samples_lens = len(samples)
+        train_ratio = round(samples_lens * (ratio[0]/sum(ratio)))
+        tests_ratio = round(samples_lens * (ratio[2]/sum(ratio)))
+        valid_ratio = samples_lens - train_ratio - tests_ratio
+        data = list(zip(samples, labels))
         if shuffle:
-            random.shuffle(samples)
-        x, y = zip(*samples)
+            random.shuffle(data)
+        x, y = zip(*data)
         train['x'].extend(x[:train_ratio])
         train['y'].extend(y[:train_ratio])
         valid['x'].extend(x[train_ratio:train_ratio+valid_ratio])
@@ -83,14 +84,19 @@ def spliter(samps, ratio, shuffle=True):
         tests['y'].extend(y[-tests_ratio:])
     return train, valid, tests
 
-def truncate_and_padding(data, length, word_size):
+def truncate_and_padding(data, word_size, length):
     """truncate and padding data"""
     if not isinstance(data, np.ndarray):
         data = np.asarray(data)
     real_length = len(data)
     if real_length < length:
-        pad = np.zeros((length-real_length, word_size))
-        data = np.concatenate((data, pad), axis=0)
+        try:
+            pad = np.zeros((length-real_length, word_size))
+            data = np.concatenate((data, pad), axis=0)
+        except Exception:
+            print(data.shape)
+            print(pad.shape)
+            return
     else:
         data = data[:length]
     return data
