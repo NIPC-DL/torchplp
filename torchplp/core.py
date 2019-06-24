@@ -6,3 +6,6 @@ core.py - Contains common functions and declarations
 :Email: verf@protonmail.com
 :License: MIT
 """
+from .imports import *
+
+Cursor = cc.Cursor

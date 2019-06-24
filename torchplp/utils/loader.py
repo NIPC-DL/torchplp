@@ -7,16 +7,18 @@ loader.py - Load data for further processing
 :License: MIT
 """
 import clang.cindex as cc
-from .astree import ASTNode, ASTKind
 from tempfile import NamedTemporaryFile
+from concurrent import futures
+from .astree import ASTNode, ASTKind
+from ..core import *
 
 
-def packer_cc(root, filename):
+def packer_cc(root:Cursor, filename:str) -> ASTNode:
     """Transform clang ast to torchplp ast
 
     Args:
         root (torchplp.cindex.Cursor): root of clang ast
-    
+
     Return:
         ast (torchplp.utils.ASTNode): torchplp ast node
 
@@ -38,14 +40,14 @@ def packer_cc(root, filename):
     return ast
 
 
-def loader_cc(data, args=None):
+def loader_cc(data:Union[str, list], args:list=None) -> ASTNode:
     """Load c/c++ data (file or list of codes), return entry node
 
     This function load c/c++ source code file from path, the file can be
     incomplete but can't have too many errors.
 
     Args:
-        path (str): path of the file
+        path (str, list): path of the file
     
     Return:
         ast (torchplp.utils.ASTNode): Abstract Syntax Tree
@@ -59,11 +61,11 @@ def loader_cc(data, args=None):
     elif isinstance(data, str):
         tu = index.parse(data, args)
     else:
-        print(f'{data} must be a file path or list of code')
+        raise ValueError(f'{data} must be a file path or list of code')
     return packer_cc(tu.cursor, str(tu.cursor.spelling))
 
 
-def loader_cgd(path, spliter='-'*20):
+def loader_cgd(path:str, spliter:str='-'*20) -> list:
     """Load code gadget file from path
 
     cgd file is a file looks like:
@@ -95,3 +97,18 @@ def loader_cgd(path, spliter='-'*20):
                     samples.append((cgd, int(frag[-1])))
                 frag = list()
     return samples
+
+def pool_loader(worker, callback, files, args):
+    """create a multiprocessing pool to load files
+    
+    Args:
+        worker(callable): load file from files
+        callback(callable): callback function
+        files(list): The file list
+        args(list): Additional arguments for worker
+
+    """
+    with futures.ProcessPoolExecutor() as pool:
+        for file in files:
+            res = pool.submit(worker, file, args)
+            res.add_done_callback(callback)
