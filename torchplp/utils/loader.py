@@ -13,7 +13,7 @@ from .astree import ASTNode, ASTKind
 from ..core import *
 
 
-def packer_cc(root:Cursor, filename:str) -> ASTNode:
+def packer_cc(root: Cursor, filename: str) -> ASTNode:
     """Transform clang ast to torchplp ast
 
     Args:
@@ -40,7 +40,7 @@ def packer_cc(root:Cursor, filename:str) -> ASTNode:
     return ast
 
 
-def loader_cc(data:Union[str, list], args:list=None) -> ASTNode:
+def loader_cc(data: Union[str, list], args: list=None) -> ASTNode:
     """Load c/c++ data (file or list of codes), return entry node
 
     This function load c/c++ source code file from path, the file can be
@@ -65,7 +65,7 @@ def loader_cc(data:Union[str, list], args:list=None) -> ASTNode:
     return packer_cc(tu.cursor, str(tu.cursor.spelling))
 
 
-def loader_cgd(path:str, spliter:str='-'*20) -> list:
+def loader_cgd(path: str, spliter: str='-'*20) -> list:
     """Load code gadget file from path
 
     cgd file is a file looks like:

@@ -14,6 +14,7 @@ from torchplp.utils.loader import loader_cc
 from torchplp.utils.utils import download_file
 from .models import Dataset
 from .constants import JULIET_URL
+from ..core import *
 
 
 class Juliet(Dataset):
@@ -28,7 +29,11 @@ class Juliet(Dataset):
 
     """
 
-    def __init__(self, root, download=True, proxy=None, cache=True):
+    def __init__(self,
+                 root: str,
+                 download: bool = True,
+                 proxy: Union[None, str] = None,
+                 cache: bool = True):
         super(Juliet, self).__init__(root)
         self._case = self._root / 'C' / 'testcases'
         self._support = self._root / 'C' / 'testcasesupport'
@@ -47,7 +52,7 @@ class Juliet(Dataset):
                         file_list.append(f)
                 self._category[self.iscwe(d.name)] = file_list
 
-    def download(self, proxy):
+    def download(self, proxy: str):
         """Download Juliet Test Suiet from NIST website
 
         Args:
@@ -67,17 +72,20 @@ class Juliet(Dataset):
         else:
             print(f"Dataset exist, download cancel")
 
-    def load(self, cwe):
+    def load(self, cwe: str) -> list:
         files = self._category[cwe]
         all_samples = self.tag_all_files(files, [f"-I{str(self._support)}"])
         return all_samples
-    
+
     @staticmethod
-    def tag_file(file, args):
+    def tag_file(file: str, args: list) -> list:
         """extract function from file and tag it by it's name"""
         samples = list()
         ast = loader_cc(str(file), args)
-        decl = [x for x in ast.walk() if x.is_definition and x.kind == 'FUNCTION_DECL']
+        decl = [
+            x for x in ast.walk()
+            if x.is_definition and x.kind == 'FUNCTION_DECL'
+        ]
         for node in decl:
             if 'main' in str(node.data):
                 continue
@@ -88,8 +96,8 @@ class Juliet(Dataset):
             label = 1 if 'bad' in str(node.data) else 0
             samples.append((node, label))
         return samples
-    
-    def tag_callback(self, r):
+
+    def tag_callback(self, r: Any) -> list:
         self.all_samples.extend(r.result())
 
     def tag_all_files(self, files, args):
@@ -99,11 +107,9 @@ class Juliet(Dataset):
             for file in files:
                 res = pool.submit(self.tag_file, file, args)
                 res.add_done_callback(self.tag_callback)
-        # for file in files:
-        #     self.all_samples.extend(self.tag_file(file, args))
         return self.all_samples
 
     @staticmethod
-    def iscwe(name):
+    def iscwe(name: str) -> Union[None, str]:
         m = re.match(r'CWE\d{2,3}', name)
         return m.group() if m is not None else False

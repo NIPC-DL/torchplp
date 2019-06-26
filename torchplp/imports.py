@@ -18,5 +18,3 @@ import torch.nn as nn
 import numpy as np
 import pandas as pd
 import clang.cindex as cc
-# torchplp
-from torchplp.utils.astree import ASTNode
