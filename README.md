@@ -11,6 +11,12 @@
 python setup.py install
 ```
 
+## Development
+
+```sh
+python setup.py develop
+```
+
 ## Author
 👤 **Verf [NIPC-DL]**
 
