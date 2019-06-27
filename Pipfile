@@ -5,13 +5,16 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
+sphinx = "*"
+pandas = "*"
+sphinx-rtd-theme = "*"
 
 [packages]
 numpy = "*"
 torch = {file = "https://download.pytorch.org/whl/cu100/torch-1.1.0-cp37-cp37m-linux_x86_64.whl"}
 gensim = "*"
-pandas = "*"
 clang = "*"
+graphviz = "*"
 
 [requires]
 python_version = "3.7"

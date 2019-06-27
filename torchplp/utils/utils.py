@@ -40,6 +40,7 @@ def download_file(url, path, proxy=None):
             if chunk:
                 f.write(chunk)
 
+
 def git_clone_file(url, path):
     """git clone repo from url
 
@@ -53,7 +54,8 @@ def git_clone_file(url, path):
     else:
         raise SystemError("git not found, please install git first.")
 
-def spliter(data_dict, ratio=[6,1,1], shuffle=True):
+
+def spliter(data_dict, ratio=[6, 1, 1], shuffle=True):
     """split dict dataset into train, valid and tests set
 
     Args:
@@ -64,13 +66,13 @@ def spliter(data_dict, ratio=[6,1,1], shuffle=True):
     """
     if len(ratio) != 3:
         raise ValueError(f'ratio must include three int numbers')
-    train = {'x':list(), 'y':list()}
-    valid = {'x':list(), 'y':list()}
-    tests = {'x':list(), 'y':list()}
+    train = {'x': list(), 'y': list()}
+    valid = {'x': list(), 'y': list()}
+    tests = {'x': list(), 'y': list()}
     for _, [samples, labels] in data_dict.items():
         samples_lens = len(samples)
-        train_ratio = round(samples_lens * (ratio[0]/sum(ratio)))
-        tests_ratio = round(samples_lens * (ratio[2]/sum(ratio)))
+        train_ratio = round(samples_lens * (ratio[0] / sum(ratio)))
+        tests_ratio = round(samples_lens * (ratio[2] / sum(ratio)))
         valid_ratio = samples_lens - train_ratio - tests_ratio
         data = list(zip(samples, labels))
         if shuffle:
@@ -78,11 +80,12 @@ def spliter(data_dict, ratio=[6,1,1], shuffle=True):
         x, y = zip(*data)
         train['x'].extend(x[:train_ratio])
         train['y'].extend(y[:train_ratio])
-        valid['x'].extend(x[train_ratio:train_ratio+valid_ratio])
-        valid['y'].extend(y[train_ratio:train_ratio+valid_ratio])
+        valid['x'].extend(x[train_ratio:train_ratio + valid_ratio])
+        valid['y'].extend(y[train_ratio:train_ratio + valid_ratio])
         tests['x'].extend(x[-tests_ratio:])
         tests['y'].extend(y[-tests_ratio:])
     return train, valid, tests
+
 
 def truncate_and_padding(data, word_size, length):
     """truncate and padding data"""
@@ -91,7 +94,7 @@ def truncate_and_padding(data, word_size, length):
     real_length = len(data)
     if real_length < length:
         try:
-            pad = np.zeros((length-real_length, word_size))
+            pad = np.zeros((length - real_length, word_size))
             data = np.concatenate((data, pad), axis=0)
         except Exception:
             print(data.shape)
@@ -100,4 +103,3 @@ def truncate_and_padding(data, word_size, length):
     else:
         data = data[:length]
     return data
-

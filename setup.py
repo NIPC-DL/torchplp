@@ -2,11 +2,13 @@
 # coding: utf-8
 from setuptools import setup, find_packages
 
-VERSION = '0.1'
+VERSION = '0.01'
 REQUIREMENTS = [
         'numpy',
         'torch',
+        'clang',
         'gensim',
+        'graphviz'
         ]
 
 def readme():
