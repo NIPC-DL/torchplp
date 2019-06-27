@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-This subpackage is the collection of all process for datasets
+__init__.py - models init
+
 
 :Author: Verf
 :Email: verf@protonmail.com
 :License: MIT
 """
+from .jsix import jsix
+
+__all__ = [
+    'jsix',
+]

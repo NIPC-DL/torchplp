@@ -1,119 +1,64 @@
 # -*- coding: utf-8 -*-
 """
-treemod.py - The Tree Model Processor
+treemodel.py - transform AST into vectors
 
 :Author: Verf
 :Email: verf@protonmail.com
 :License: MIT
 """
-import re
-import pickle
-import torch
 import numpy as np
-from hashlib import sha256
-from struct import unpack
-from .models import Processor
-from .parser import Parser
-from covec.utils.vstree import VSTNode
+from torchplp.utils.astree import ASTNode
 
+def standardize(root):
+    var_names = []
+    fun_names = []
+    root.data = 'func_root'
+    for node in root.walk():
+        if node.kind == 'VAR_DECL':
+            var_names.append(node.data)
+        if 'CWE' in node.data and node.data not in fun_names:
+            fun_names.append(node.data)
+    for node in root.walk():
+        if node.data in var_names:
+            node.data = f'var{var_names.index(node.data)}'
+        if node.data in fun_names:
+            node.data = f'fun{fun_names.index(node.data)}'
+    return root
 
-class TreeModel(Processor):
-    """
-    
-    Args:
-        embedder (covec.processor.WordsModel.model): The words model that map words to vector
-        length (int): The length of vector for VST Node
-        
-    """
+def tree2seq(data, path='DFS'):
+    """transform tree structrue to sequence"""
+    assert isinstance(data, ASTNode)
+    sample = list()
+    for node in data.walk(path):
+        sample.append([node.data, str(node.kind)])
+    return sample
 
-    def __init__(self, embedder, length):
+def vectorlize(data, embedder):
+    """transform sequence data to its vector representation"""
+    vr = []
+    for node in data:
+        try:
+            vec = embedder[node[0]] if bool(node[0]) else embedder[node[1]]
+        except Exception:
+            vec = np.zeros(embedder.vector_size)
+        vr.append(vec.tolist())
+    vr = np.asarray(vr)
+    return vr
+
+class TreeModel(object):
+    """transform ASTs into vectors"""
+    def __init__(self, embedder=None, pretrain=False):
         self._embedder = embedder
-        self._length = length
+        self._pretrain = pretrain
 
-    @staticmethod
-    def standarlize(root):
-        """
-        This function replace the user-defined variable and function name
-        to fixed name such as var0, var1 and fun0, fun1, which we called 
-        standarlize. In SySeVR, they called this procedure symbolize.
+    def __call__(self, nodes):
+        samples = list()
+        for node in nodes:
+            x = standardize(node)
+            x = tree2seq(x)
+            if not self._pretrain:
+                self._embedder.train(x)
+            x = vectorlize(x, self._embedder)
+            samples.append(x)
+        return samples
 
-        Args:
-            data (list): The list of AST
-
-        Return:
-            data (list): The standarlize data list
-
-        """
-        pr = Parser(root)
-        var_decl = pr.walker(lambda x: x.kind == 'VAR_DECL')
-        var_names = [x.data for x in var_decl]
-        fun_decl = pr.walker(lambda x: x.kind == 'FUNCTION_DECL')
-        fun_names = [x.data for x in fun_decl]
-        for node in pr.walk():
-            if node.data in var_names:
-                node.data = f'var{var_names.index(node.data)}'
-            if node.data in fun_names:
-                node.data = f'fun{fun_names.index(node.data)}'
-            if re.match(r'^CWE\d{2,3}_.*Data$', node.data):
-                node.data = f'var{str(len(var_names))}'
-        return root
-
-    def vectorlize(self, root):
-        """
-        This function converts the standarlized codes into a vector representation 
-        through a words model.
-
-        Args:
-            srl (list): The list of symbolic representation
-            embedder (covec.processor.WordsModel.model): The words model that map words to vector
-            length (int): The length of vector for AST Node
-
-        """
-        vst = VSTNode()
-        data_vec = self._embedder[root.data] if root.data else np.zeros(
-            int(self._length / 2))
-        kind_vec = self._embedder[root.kind] if root.kind else np.zeros(
-            int(self._length / 2))
-        data_vec = torch.from_numpy(data_vec).float()
-        kind_vec = torch.from_numpy(kind_vec).float()
-        vst.vector = torch.cat((data_vec, kind_vec), 0)
-        for c in root.children:
-            child = self.vectorlize(c)
-            vst.children.append(child)
-            child.parent = vst
-        return vst
-
-    def process(self, data, pretrain=False):
-        """Process input data and output vector data
-        
-        Args:
-            data (list): The list of AST Node
-            pretrain (bool, optional): If embedder is pretrained, don't train it
-                by current dataset
-
-        """
-
-        srl = [self.standarlize(x) for x in data]
-        if not pretrain:
-            self._pretrain(data)
-        vrl = [self.vectorlize(x) for x in srl]
-        return vrl
-
-    def _pretrain(self, data):
-        """Training the embedder by given data
-        
-        Args:
-            data (list): The list of AST Node
-
-        """
-        sent = []
-        for root in data:
-            atoms = []
-            pr = Parser(root)
-            for node in pr.walk():
-                if node.data:
-                    atoms.append(node.data)
-                if node.kind:
-                    atoms.append(node.kind)
-            sent.append(atoms)
-        self._embedder.train(sent)

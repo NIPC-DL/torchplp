@@ -15,13 +15,14 @@ class Processor(metaclass=abc.ABCMeta):
     def __repr__(self):
         return self.__class__.__name__
 
-    @abc.abstractmethod
-    def process(self):
-        """Process given data"""
-        raise NotImplementedError
+class Parser(metaclass=abc.ABCMeta):
+    """The upper class of parser"""
+
+    def __repr__(self):
+        return self.__class__.__name__
 
 
-class WordsModel(metaclass=abc.ABCMeta):
+class Embedder(metaclass=abc.ABCMeta):
     """The upper class of words model"""
 
     def __repr__(self):
