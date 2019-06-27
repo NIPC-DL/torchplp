@@ -94,7 +94,7 @@ KEYWORD = [
     'buffer',
     'flag',
     'size',
-    'len',
+    'T',
     'length',
     'str',
     'string',

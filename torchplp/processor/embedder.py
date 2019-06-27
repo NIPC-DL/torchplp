@@ -7,10 +7,10 @@ embedding.py - Provide word embedding methods
 :License: MIT
 """
 import gensim
-from .models import WordsModel
+from .models import Embedder
 
 
-class Word2Vec(WordsModel):
+class Word2Vec(Embedder):
     """Words model for word embedding by google word2vec
        <https://en.wikipedia.org/wiki/Word2vec>
     
@@ -29,7 +29,7 @@ class Word2Vec(WordsModel):
         """Train words model by given sentences
         
         Args:
-            sents (list): The sentence list
+            sents (list): The list of sentences
 
         """
         if self.isempty():
@@ -45,6 +45,10 @@ class Word2Vec(WordsModel):
         """Determine if the model is empty"""
         return not bool(self._model.wv.vocab)
 
+    def load(self, path):
+        """load words model from pretrain"""
+        self._model = gensim.models.Word2Vec.load(path)
+
     def save(self, path):
         """Save words module
 
@@ -53,3 +57,15 @@ class Word2Vec(WordsModel):
 
         """
         self._model.save(path)
+
+    @property
+    def model(self):
+        return self._model
+
+    @property
+    def length(self):
+        return len(self._model.wv.vocab)
+
+    @property
+    def vector_size(self):
+        return self._model.vector_size
