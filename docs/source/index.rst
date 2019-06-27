@@ -5,16 +5,13 @@
 
 Welcome to torchplp's documentation!
 ====================================
+The torchplp package is the collections of popular datasets and processing methods for program source code analysis. This is a very early version, just use it carefully.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Package Reference
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    torchplp.datasets
+    torchplp.models
+    torchplp.processor
+    torchplp.utils

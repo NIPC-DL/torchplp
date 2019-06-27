@@ -1,4 +1,4 @@
-<h1 align="center">Welcome to torchplp 👋</h1>
+<h1 align="center">Welcome to torchplp</h1>
 <p>
   <img src="https://img.shields.io/badge/version-0.01-blue.svg?cacheSeconds=2592000" />
 </p>
@@ -17,7 +17,10 @@ python setup.py install
 python setup.py develop
 ```
 
+## Documents
+Comming Soon...
+
 ## Author
-👤 **Verf [NIPC-DL]**
+**Verf [NIPC-DL]**
 
 * Github: [@Verf](https://github.com/Verf)
