@@ -44,6 +44,7 @@ class ASTNode:
         self._kind = None
         self._source = None
         self._label = None
+        self._tokens = None
         self._is_definition = None
 
     def __repr__(self):
@@ -114,6 +115,14 @@ class ASTNode:
     @label.setter
     def label(self, value):
         self._label = value
+
+    @property
+    def tokens(self):
+        return self._tokens
+
+    @tokens.setter
+    def tokens(self, value):
+        self._tokens = value
 
     @property
     def is_definition(self):

@@ -6,7 +6,6 @@ loader.py - Load data for further processing
 :Email: verf@protonmail.com
 :License: MIT
 """
-import clang.cindex as cc
 from tempfile import NamedTemporaryFile
 from concurrent import futures
 from .astree import ASTNode, ASTKind
@@ -25,12 +24,25 @@ def packer_cc(root: Cursor, filename: str) -> ASTNode:
     """
     ast = ASTNode()
     ast.id = root.hash
-    if root.spelling:
-        ast.data = root.spelling
-    else:
-        ast.data = root.displayname
+    ast.data = root.spelling
     ast.kind = ASTKind(root.kind, 'cc')
+    if ast.kind == 'BINARY_OPERATOR':
+        for node in root.get_tokens():
+            if node.kind == cc.TokenKind.PUNCTUATION:
+                if node.spelling not in ['(', ')', '[', ']', '{', '}']:
+                    ast.data = node.spelling
+                    break
     ast.is_definition = root.is_definition()
+    if ast.kind == 'FUNCTION_DECL':
+        tokens = list()
+        for tk in root.get_tokens():
+            if tk.spelling == ast.data:
+                tokens.append('func_root')
+            elif tk.kind == cc.TokenKind.COMMENT:
+                continue
+            else:
+                tokens.append(tk.spelling)
+        ast.tokens = tokens
     for c in root.get_children():
         if str(c.location.file) != filename:
             continue

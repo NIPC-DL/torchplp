@@ -27,10 +27,12 @@ def standardize(root):
 
 def tree2seq(data, path='DFS'):
     """transform tree structrue to sequence"""
-    assert isinstance(data, ASTNode)
     sample = list()
     for node in data.walk(path):
-        sample.append([node.data, str(node.kind)])
+        if node.spelling:
+            sample.append(node.spelling)
+        else:
+            sample.append(node.kind)
     return sample
 
 def vectorlize(data, embedder):
@@ -44,21 +46,3 @@ def vectorlize(data, embedder):
         vr.append(vec.tolist())
     vr = np.asarray(vr)
     return vr
-
-class TreeModel(object):
-    """transform ASTs into vectors"""
-    def __init__(self, embedder=None, pretrain=False):
-        self._embedder = embedder
-        self._pretrain = pretrain
-
-    def __call__(self, nodes):
-        samples = list()
-        for node in nodes:
-            x = standardize(node)
-            x = tree2seq(x)
-            if not self._pretrain:
-                self._embedder.train(x)
-            x = vectorlize(x, self._embedder)
-            samples.append(x)
-        return samples
-

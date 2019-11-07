@@ -8,13 +8,12 @@ utils.py - The collection of utils
 """
 import os
 import random
-import torch
 import requests
-import numpy as np
 from subprocess import call
+from ..core import *
 
 
-def download_file(url, path, proxy=None):
+def download_file(url: str, path: str, proxy: str) -> None:
     """Donwloade file from url
 
     Args:
@@ -35,13 +34,13 @@ def download_file(url, path, proxy=None):
     else:
         r = requests.get(url, stream=True)
     chunk_size = 1024
-    with open(str(path / url.split('/')[-1]), 'wb') as f:
+    with open(f'{path}/{url.split("/")[-1]}', 'wb') as f:
         for chunk in r.iter_content(chunk_size=chunk_size):
             if chunk:
                 f.write(chunk)
 
 
-def git_clone_file(url, path):
+def git_clone_file(url: str, path: str) -> None:
     """git clone repo from url
 
     Args:
@@ -50,7 +49,7 @@ def git_clone_file(url, path):
 
     """
     if os.path.exists('/usr/bin/git') or os.path.exists('/bin/git'):
-        call(['git', 'clone', url, str(path)])
+        call(['git', 'clone', url, path])
     else:
         raise SystemError("git not found, please install git first.")
 

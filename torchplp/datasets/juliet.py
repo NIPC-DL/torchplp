@@ -32,25 +32,27 @@ class Juliet(Dataset):
     def __init__(self,
                  root: str,
                  download: bool = True,
-                 proxy: Union[None, str] = None,
+                 proxy: str = '',
                  cache: bool = True):
         super(Juliet, self).__init__(root)
-        self._case = self._root / 'C' / 'testcases'
-        self._support = self._root / 'C' / 'testcasesupport'
-        self._cache = self._root / 'cache'
+        self._case: Path = self._root / 'C' / 'testcases'
+        self._support: Path = self._root / 'C' / 'testcasesupport'
+
+        self._cache: Path = self._root / 'DataCache'
         self._cache.mkdir(parents=True, exist_ok=True)
 
         if download:
             self.download(proxy)
 
-        self._category = dict()
+        self._category: Dict[str, List[str]] = dict()
         for d in self._case.iterdir():
-            if d.is_dir() and self.iscwe(d.name):
+            cwe = self.iscwe(d.name)
+            if d.is_dir() and cwe:
                 file_list = list()
                 for f in d.glob('**/*.*'):
                     if f.suffix in ['.c', '.cpp'] and self.iscwe(f.name):
-                        file_list.append(f)
-                self._category[self.iscwe(d.name)] = file_list
+                        file_list.append(str(f))
+                self._category[cwe] = file_list
 
     def download(self, proxy: str):
         """Download Juliet Test Suiet from NIST website
@@ -63,7 +65,7 @@ class Juliet(Dataset):
         """
         print(f'Download {JULIET_URL}')
         if not self._case.exists():
-            download_file(JULIET_URL, self._root, proxy)
+            download_file(JULIET_URL, str(self._root), proxy)
             print('Download success, start extracting')
             zip_file = self._root / JULIET_URL.split('/')[-1]
             with zipfile.ZipFile(str(zip_file)) as z:
@@ -97,7 +99,7 @@ class Juliet(Dataset):
             samples.append((node, label))
         return samples
 
-    def tag_callback(self, r: Any) -> list:
+    def tag_callback(self, r: Any) -> None:
         self.all_samples.extend(r.result())
 
     def tag_all_files(self, files, args):
@@ -108,8 +110,8 @@ class Juliet(Dataset):
                 res = pool.submit(self.tag_file, file, args)
                 res.add_done_callback(self.tag_callback)
         return self.all_samples
-
+    
     @staticmethod
-    def iscwe(name: str) -> Union[None, str]:
+    def iscwe(name: str) -> str:
         m = re.match(r'CWE\d{2,3}', name)
-        return m.group() if m is not None else False
+        return m.group() if m is not None else ''

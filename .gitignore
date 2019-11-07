@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 .vscode/
+.vim/
 build/
 develop-eggs/
 dist/

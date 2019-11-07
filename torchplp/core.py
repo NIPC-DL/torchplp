@@ -9,3 +9,4 @@ core.py - Contains common functions and declarations
 from .imports import *
 
 Cursor = cc.Cursor
+Path = pathlib.Path
